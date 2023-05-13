@@ -2,9 +2,9 @@ const mongoose = require("mongoose");
 
 const agentSchema = new mongoose.Schema(
     {
-        agentName:{
-            type:String,
-            required:true,
+        balance:{
+            type:Number,
+            default:0
         },
         usersData:[{
             userName:{
@@ -20,11 +20,8 @@ const agentSchema = new mongoose.Schema(
                 type:Date,
                 // default:new Date()
             }
-        }],
-        balance:{
-            type:Number,
-            default:0
-        }
+        }]
+
     },
     {timestamps:true}
 );

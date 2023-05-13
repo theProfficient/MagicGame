@@ -7,10 +7,6 @@ const adminSchema = new mongoose.Schema(
         required:true
     },
     agentData:[{
-        agentName:{
-            type:String,
-            required:true
-        },
         agentId:{
             type:String,
             required:true,

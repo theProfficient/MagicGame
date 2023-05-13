@@ -5,9 +5,13 @@ const adminController = require("../controller/adminController");
 const agentController = require("../controller/agentControlller");
 const userController = require("../controller/userController");
 
-//_________________Admin_____________
+//_________________Agent_____________
 
-//Router.post("/createAdmin", adminController.)
+Router.post("/registerAgent", agentController.createAgent);
+
+Router.get("/getAgentData", agentController.getAgentData);
+
+Router.put("/updateAgenytData", agentController.updateAgentData);
 
 //********************Make sure end point is correct or not**************************** */
 
