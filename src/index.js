@@ -1,4 +1,3 @@
-require("dotenv").config();
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
@@ -13,7 +12,7 @@ mongoose.set("strictQuery", false);
 
 // mongoose
 //   .connect(
-//     "mongodb+srv://theproficienttech333:gzYGYI5pD4oAUvim@cluster0.gp7jlnb.mongodb.net/gamingproduct",
+//     "mongodb+srv://theproficienttech333:gzYGYI5pD4oAUvim@cluster0.gp7jlnb.mongodb.net/magicGame",
 //     {
 //       useNewUrlParser: true,
 //     }

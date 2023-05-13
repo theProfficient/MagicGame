@@ -7,18 +7,23 @@ const adminSchema = new mongoose.Schema(
         required:true
     },
     agentData:[{
-        name:{
+        agentName:{
             type:String,
             required:true
         },
         agentId:{
-            type:true,
+            type:String,
             required:true,
             unique:true
         },
         dateOfIssued:{
-            type:Date
-        }
+            type:Date,
+            // default:new Date()
+        },
+        balance:{
+            type:Number,
+            default:0
+        },
     }]
 },
 {timestamps:true}
