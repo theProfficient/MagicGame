@@ -60,7 +60,7 @@ const createUser = async function (req, res) {
           usersData: {
             userName: userCreated.userName,
             userId: userCreated._id,
-            dateOfIssued: userCreated.dateOfIssued,
+            dateOfIssued: new Date(),
           },
         },
       },

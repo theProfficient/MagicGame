@@ -59,7 +59,7 @@ const createAgent = async function (req, res) {
           agentData: {
             agentName: createAgentData.userName,
             agentId: createAgentData._id,
-            dateOfIssued: createAgentData.dateOfIssued,
+            dateOfIssued: new Date(),
           },
         },
       },
