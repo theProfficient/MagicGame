@@ -2,9 +2,17 @@ const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
   {
+    agentId:{
+      type:String,
+      required:true
+  },
     userName: {
       type: String,
       required: true,
+    },
+    password:{
+      type:String,
+      required:true
     },
     balance: {
       type: Number,

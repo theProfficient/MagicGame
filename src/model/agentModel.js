@@ -2,6 +2,14 @@ const mongoose = require("mongoose");
 
 const agentSchema = new mongoose.Schema(
     {
+        adminId:{
+            type:String,
+            required:true
+        },
+        password:{
+            type:String,
+            required:true
+          },
         balance:{
             type:Number,
             default:0
@@ -17,16 +25,12 @@ const agentSchema = new mongoose.Schema(
         usersData:[{
             userName:{
                 type:String,
-                required:true
             },
             userId:{
                 type:String,
-                required:true,
-                unique:true
             },
             dateOfIssued:{
                 type:Date,
-                // default:new Date()
             },
         }]
 

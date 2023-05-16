@@ -1,10 +1,14 @@
 const mongoose = require("mongoose");
 
 const adminSchema = new mongoose.Schema(
-    {
-    adminName:{
-        type:String,
-        required:true
+  {
+    adminName: {
+      type: String,
+      required: true,
+    },
+    password:{
+      type:String,
+      required:true
     },
     role: { 
         type: String,
@@ -13,19 +17,16 @@ const adminSchema = new mongoose.Schema(
     agentData:[{
         agentId:{
             type:String,
-            required:true,
-            unique:true
         },
-        dateOfIssued:{
-            type:Date,
-            // default:new Date()
+        agentName: {
+          type: String,
         },
-        balance:{
-            type:Number,
-            default:0
+        dateOfIssued: {
+          type: Date,
         },
-    }]
-},
-{timestamps:true}
+      },
+    ],
+  },
+  { timestamps: true }
 );
-module.exports = mongoose.model('Admin', adminSchema);
+module.exports = mongoose.model("Admin", adminSchema);
