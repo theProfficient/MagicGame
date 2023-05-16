@@ -6,6 +6,14 @@ const agentSchema = new mongoose.Schema(
             type:Number,
             default:0
         },
+        role: { 
+            type: String,
+            default: 'agent'
+         },
+         banned:{
+            type:Boolean,
+            default:false
+           },
         usersData:[{
             userName:{
                 type:String,
@@ -19,7 +27,7 @@ const agentSchema = new mongoose.Schema(
             dateOfIssued:{
                 type:Date,
                 // default:new Date()
-            }
+            },
         }]
 
     },

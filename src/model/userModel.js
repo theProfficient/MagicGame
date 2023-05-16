@@ -13,6 +13,14 @@ const userSchema = new mongoose.Schema(
     IMEIno: {
         type: String,
       },
+      role: { 
+        type: String,
+        default: 'user'
+     },
+     banned:{
+      type:Boolean,
+      default:false
+     },
     ticketData: [
       {
         drawtime: {
