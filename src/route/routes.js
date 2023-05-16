@@ -5,22 +5,25 @@ const adminController = require("../controller/adminController");
 const agentController = require("../controller/agentControlller");
 const userController = require("../controller/userController");
 
-//_________________Agent_____________
+//__________________________Admin___________
 
-Router.post("/registerAgent", agentController.createAgent);
+Router.post("/registerAdmin", adminController.createAdmin);
+Router.get("/profileOfAdmin", adminController.getAdmin);
 
-Router.get("/getAgentData", agentController.getAgentData);
 
-Router.put("/updateAgenytData", agentController.updateAgentData);
+//_________________________User_________________________
 
-//********************Make sure end point is correct or not**************************** */
+Router.post("/registerUser", userController.createUser);
+Router.get("/profileOfUser", userController.getUser);
+
+
 
 Router.all("/**", function (req, res) {
-  res.status(400)
-    .send({
+    res.status(404).send({
       status: false,
-      message: "Make sure ypur end point is correct or not",
+      message: "Make Sure Your Endpoint is Correct or Not!",
     });
-});
-
-module.exports = Router;
+  });
+  
+  module.exports = Router;
+  
