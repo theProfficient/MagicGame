@@ -14,11 +14,11 @@ const adminSchema = new mongoose.Schema(
         type: String,
         default: 'admin'
      },
-    agentData:[{
-        agentId:{
+    distributorData:[{
+        distributorId:{
             type:String,
         },
-        agentName: {
+        distributorName: {
           type: String,
         },
         dateOfIssued: {

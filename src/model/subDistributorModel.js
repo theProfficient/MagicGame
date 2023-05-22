@@ -1,20 +1,17 @@
 const mongoose = require("mongoose");
 
-const agentSchema = new mongoose.Schema(
+const subDistributorSchema = new mongoose.Schema(
     {
         adminId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Admin',
           },
-          distributorId: {
+        distributorId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Distributor',
-          },
-        SubDistributorId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'SubDistributor',
             //required: true
           },
+      
         password:{
             type:String,
             required:true
@@ -25,17 +22,17 @@ const agentSchema = new mongoose.Schema(
         },
         role: { 
             type: String,
-            default: 'agent'
+            default: 'subDistributor'
          },
          banned:{
             type:Boolean,
             default:false
            },
-        usersData:[{
-            userName:{
+        agentData:[{
+            agentName:{
                 type:String,
             },
-            userId:{
+            agentId:{
                 type:String,
             },
             dateOfIssued:{
@@ -47,4 +44,4 @@ const agentSchema = new mongoose.Schema(
     {timestamps:true}
 );
 
-module.exports = mongoose.model("AgentData", agentSchema);
+module.exports = mongoose.model("SubDistributor", subDistributorSchema);

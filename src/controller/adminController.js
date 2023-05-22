@@ -1,6 +1,8 @@
 const mongoose = require("mongoose");
 const adminModel = require("../model/adminModel");
 const agentModel = require("../model/agentModel");
+const distributorModel = require("../model/distributorModel");
+const subDistributorModel = require("../model/subDistributorModel")
 
 const createAdmin = async function (req, res) {
   try {
@@ -85,16 +87,166 @@ const getAdmin = async function (req, res) {
   }
 };
 
-//________________________________updateAgentByAdmin____________________
 
-const updateAgentByAdmin = async function (req, res) {
+//__________________create distributor by admin____________________
+
+const crtDistributorByAdmin = async function (req, res) {
   try {
-    const { adminId, password, agentId, banned, balance } = req.query;
+    let bodyData = req.body;
+    // let adminId = req.query.adminId;
+    let {
+      balance,
+      distributorData,
+      distributorName,
+      distributorId,
+      dateOfIssued,
+      password,
+      adminId,
+    } = bodyData;
 
-    if (!adminId || !password || !agentId) {
+    if (Object.keys(bodyData).length === 0) {
+      return res
+        .status(400)
+        .send({ status: false, message: "please provide some data in body" });
+    }
+
+    if (!adminId) {
       return res.status(400).send({
         status: false,
-        message: "agentId, password, and adminId all are required",
+        message: "adminId required",
+      });
+    }
+    if (!password) {
+      return res
+        .status(400)
+        .send({ status: false, message: "password is required" });
+    }
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(password)) {
+      return res.status(400).send({
+        status: false,
+        message:
+          "password should have at least 8 characters long, one uppercase, one lowercase, one digit and one special character(optional)",
+      });
+    }
+    const checkAdmin = await adminModel.findById({ _id: adminId });
+
+    if (!checkAdmin) {
+      return res.status(400).send({
+        status: false,
+        message: "No one is present as per this admin id",
+      });
+    }
+    const createDistributorData = await distributorModel.create(bodyData);
+    const storeInAdminDb = await adminModel.findByIdAndUpdate(
+      { _id: adminId },
+      {
+        $push: {
+          distributorData: {
+            distributorName: createDistributorData.distributorName,
+            distributorId: createDistributorData._id,
+            dateOfIssued: new Date(),
+          },
+        },
+      },
+      { new: true }
+    );
+
+    return res.status(201).json(createDistributorData);
+  } catch (err) {
+    return res.status(500).send({ status: false, message: err.message });
+  }
+};
+
+//__________________create subdistributor by admin____________________
+
+const crtSubDistributorByAdmin = async function (req, res) {
+  try {
+    let bodyData = req.body;
+    // let adminId = req.query.adminId;
+    let {
+      balance,
+      subDistributorData,
+      subDistributorName,
+      subDistributorId,
+      dateOfIssued,
+      password,
+      adminId,
+      distributorId
+    } = bodyData;
+
+    if (Object.keys(bodyData).length === 0) {
+      return res
+        .status(400)
+        .send({ status: false, message: "please provide some data in body" });
+    }
+
+    if (!adminId) {
+      return res.status(400).send({
+        status: false,
+        message: "adminId and required",
+      });
+    }
+    if (!password) {
+      return res
+        .status(400)
+        .send({ status: false, message: "password is required" });
+    }
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(password)) {
+      return res.status(400).send({
+        status: false,
+        message:
+          "password should have at least 8 characters long, one uppercase, one lowercase, one digit and one special character(optional)",
+      });
+    }
+    const checkAdmin = await adminModel.findById({ _id: adminId });
+
+    if (!checkAdmin) {
+      return res.status(400).send({
+        status: false,
+        message: "No one is present as per this admin id",
+      });
+    }
+    const createSubDistributorData = await subDistributorModel.create(bodyData);
+    const storeInAdminDb = await adminModel.findByIdAndUpdate(
+      { _id: adminId },
+      {
+        $push: {
+          subDistributorData: {
+            subDistributorName: createSubDistributorData.subDistributorName,
+            subDistributorId: createSubDistributorData._id,
+            dateOfIssued: new Date(),
+          },
+        },
+      },
+      { new: true }
+    );
+
+    return res.status(201).json(createSubDistributorData);
+  } catch (err) {
+    return res.status(500).send({ status: false, message: err.message });
+  }
+};
+
+
+
+
+
+
+
+//________________________________updateAgentByAdmin____________________
+
+const updateDistributorByAdmin = async function (req, res) {
+  try {
+    const { adminId, password, distributorId, banned, balance } = req.query;
+
+    if (!adminId || !password || !distributorId) {
+      return res.status(400).send({
+        status: false,
+        message: "distributorId, password, and adminId all are required",
       });
     }
 
@@ -113,38 +265,38 @@ const updateAgentByAdmin = async function (req, res) {
       });
     }
 
-    const checkAgent = await agentModel.findById({ _id: agentId });
-    if (!checkAgent) {
+    const checkDistributor = await distributorModel.findById({ _id: distributorId });
+    if (!checkDistributor) {
       return res.status(404).send({
         status: false,
-        message: "Agent not found",
+        message: "Distributor not found",
       });
     }
 
-    if (checkAgent.adminId !== adminId) {
+    if (checkDistributor.adminId !== adminId) {
       return res.status(403).send({
         status: false,
-        message: "You are not authorized to update any data of an agent",
+        message: "You are not authorized to update any data of this disributor",
       });
     }
 
     const updateObject = {};
 
-    if (balance  && !checkAgent.banned) {
-      updateObject.balance = checkAgent.balance + Number(balance);
+    if (balance  && !checkDistributor.banned) {
+      updateObject.balance = checkDistributor.balance + Number(balance);
     }
 
     if (banned) {
       updateObject.banned = banned;
     }
 
-    const updateAgentData = await agentModel.findByIdAndUpdate(
-      agentId,
+    const updateDistributorData = await distributorModel.findByIdAndUpdate(
+      distributorId,
       updateObject,
       { new: true }
     );
 
-    return res.status(200).json(updateAgentData);
+    return res.status(200).json(updateDistributorData);
   } catch (err) {
     return res.status(500).send({
       status: false,
@@ -153,4 +305,4 @@ const updateAgentByAdmin = async function (req, res) {
   }
 };
 
-module.exports = { createAdmin, getAdmin, updateAgentByAdmin };
+module.exports = { createAdmin, getAdmin, updateDistributorByAdmin,crtDistributorByAdmin,crtSubDistributorByAdmin};

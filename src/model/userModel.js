@@ -2,10 +2,23 @@ const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
   {
-    agentId:{
-      type:String,
-      required:true
-  },
+    adminId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Admin',
+    },
+    distributorId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Distributor',
+    },
+    SubDistributorId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'SubDistributor',
+    },
+    agentId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Agent',
+      required: true
+    },
     userName: {
       type: String,
       required: true,

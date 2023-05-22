@@ -9,7 +9,7 @@ const userController = require("../controller/userController");
 
 Router.post("/registerAdmin", adminController.createAdmin);
 Router.get("/profileOfAdmin", adminController.getAdmin);
-Router.put("/updateDataOfAgentByAdmin", adminController.updateAgentByAdmin);
+Router.put("/updateDataOfDistributorByAdmin", adminController.updateDistributorByAdmin);
 
 
 //__________________________Agent___________
