@@ -6,26 +6,22 @@ const adminSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    password:{
-      type:String,
-      required:true
+    password: {
+      type: String,
+      required: true,
     },
-    role: { 
-        type: String,
-        default: 'admin'
+    role: {
+      type: String,
+      default: "admin",
+    },
+    balance: {
+      type: Number,
+      default: 0,
+    },
+    banned:{
+      type:Boolean,
+      default:false
      },
-    distributorData:[{
-        distributorId:{
-            type:String,
-        },
-        distributorName: {
-          type: String,
-        },
-        dateOfIssued: {
-          type: Date,
-        },
-      },
-    ],
   },
   { timestamps: true }
 );
