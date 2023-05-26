@@ -150,15 +150,14 @@ const createSubDistributor = async function (req, res) {
 
 const updateSubDistributorData = async function (req, res) {
     try {
-      const subDistributorId = req.query.subDistributorId;
-      const queryData = req.query;
       const {
+        subDistributorId,
         distributorId,
         adminId,
         password,
         balance,
         banned,
-      } = queryData;
+      } = req.query;
       let updatedSubDistributor;
 
       if(!subDistributorId){
@@ -206,7 +205,7 @@ const updateSubDistributorData = async function (req, res) {
           );
         } else if (createdBy === "distributor") {
           let distributorId = getUsubDistributor.distributorId;
-          let distributorData = await distributorModel.findOne({_id:distributorId,banned:false})
+          let distributorData = await distributorModel.findOne({_id:distributorId})
           if(distributorData.adminId.toString() === adminId){
             updatedSubDistributor = await subDistributorModel
             .findOneAndUpdate({ _id: subDistributorId }, updateObject, { new: true })

@@ -5,76 +5,7 @@ const adminModel = require("../model/adminModel");
 const distributorModel = require("../model/distributorModel");
 const subDistributorModel = require("../model/subDistributorModel");
 
-// const createAgent = async function (req, res) {
-//   try {
-//     let bodyData = req.body;
-//     // let adminId = req.query.adminId;
-//     let {
-//       balance,
-//       usersData,
-//       userName,
-//       userId,
-//       dateOfIssued,
-//       password,
-//       adminId,
-//       createdBy
-//     } = bodyData;
-
-//     if (Object.keys(bodyData).length === 0) {
-//       return res
-//         .status(400)
-//         .send({ status: false, message: "please provide some data in body" });
-//     }
-
-//     if (!adminId) {
-//       return res.status(400).send({
-//         status: false,
-//         message: "adminId required",
-//       });
-//     }
-//     if (!password) {
-//       return res
-//         .status(400)
-//         .send({ status: false, message: "password is required" });
-//     }
-//     const passwordRegex =
-//       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$/;
-//     if (!passwordRegex.test(password)) {
-//       return res.status(400).send({
-//         status: false,
-//         message:
-//           "password should have at least 8 characters long, one uppercase, one lowercase, one digit and one special character(optional)",
-//       });
-//     }
-//     const checkAdmin = await adminModel.findById({ _id: adminId });
-
-//     if (!checkAdmin) {
-//       return res.status(400).send({
-//         status: false,
-//         message: "No one is present as per this admin id",
-//       });
-//     }
-//     bodyData.createdBy = "admin" ;
-//     const createAgentData = await agentModel.create(bodyData);
-//     const storeInAdminDb = await adminModel.findByIdAndUpdate(
-//       { _id: adminId },
-//       {
-//         $push: {
-//           agentData: {
-//             agentName: createAgentData.agentName,
-//             agentId: createAgentData._id,
-//             dateOfIssued: new Date(),
-//           },
-//         },
-//       },
-//       { new: true }
-//     );
-
-//     return res.status(201).json(createAgentData);
-//   } catch (err) {
-//     return res.status(500).send({ status: false, message: err.message });
-//   }
-// };
+//________________create agent________________________________
 
 const createAgent = async function (req, res) {
   try {
@@ -286,7 +217,7 @@ const updateUserByAgent = async function (req, res) {
     if (!mongoose.isValidObjectId(agentId)) {
       return res.status(400).send({ status: false, message: "Invalid ID" });
     }
-    const checkAgent = await agentModel.findById({ _id: agentId });
+    const checkAgent = await agentModel.findById({ _id: agentId});
     if (!checkAgent || checkAgent.banned === true) {
       return res.status(404).send({
         status: false,
@@ -322,16 +253,16 @@ const updateUserByAgent = async function (req, res) {
         );
       } else if (createdBy === "distributor") {
         let distributorId = checkAgent.distributorId
-        let findDistibutor = await distributorModel.findById({_id:distributorId, banned:false})
+        let findDistibutor = await distributorModel.findById({_id:distributorId})
         if(findDistibutor.adminId.toString() === adminId){
         updatedAgent = await agentModel
           .findOneAndUpdate({ _id: agentId }, updateObject, { new: true })
         }
       }else if (createdBy === "subDistributor") {
         let subDistributorId = checkAgent.subDistributorId
-        let subDistributor = await subDistributorModel.findById({_id:subDistributorId, banned:false})
+        let subDistributor = await subDistributorModel.findById({_id:subDistributorId})
         let distributorId = subDistributor.distributorId
-        let findDistibutor = await distributorModel.findById({_id:distributorId, banned:false})
+        let findDistibutor = await distributorModel.findById({_id:distributorId})
         if(findDistibutor.adminId.toString() === adminId){
           updatedAgent = await agentModel
             .findOneAndUpdate({ _id: agentId }, updateObject, { new: true })
@@ -361,8 +292,7 @@ const updateUserByAgent = async function (req, res) {
         if (
           createdBy === "admin"
         ) {
-        let admin = await distributorModel.findById({_id:distributorId, banned:false})
-          if(checkAgent.adminId.toString() === admin.adminId.toString()){
+          if(checkAgent.adminId.toString() === checkdistributor.adminId.toString()){
             updatedAgent = await agentModel
               .findOneAndUpdate({ _id: agentId }, updateObject, { new: true })
             }
@@ -376,11 +306,11 @@ const updateUserByAgent = async function (req, res) {
             { new: true }
           );
         } 
-        if (
+       else if (
           createdBy === "subDistributor"
         ) {
           let subDistributorId = checkAgent.subDistributorId ;
-          let distributor = await subDistributorModel.findById({_id:subDistributorId, banned:false})
+          let distributor = await subDistributorModel.findById({_id:subDistributorId})
           if(distributor.distributorId.toString() === distributorId){
             updatedAgent = await agentModel
               .findOneAndUpdate({ _id: agentId }, updateObject, { new: true })
