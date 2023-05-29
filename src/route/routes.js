@@ -36,6 +36,7 @@ Router.put("/updateAgentData", agentController.updateUserByAgent);
 Router.post("/registerUser", userController.createUser);
 Router.get("/profileOfUser", userController.getUser);
 Router.put("/updateUserData", userController.updateUser);
+Router.put("/updateAnotherUserByUser", userController.updateBalanceOfAnotherUser);
 
 
 Router.all("/**", function (req, res) {

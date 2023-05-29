@@ -29,12 +29,10 @@ const createUser = async function (req, res) {
     }
     // let creatdById;
     if (!password || !createdBy) {
-      return res
-        .status(400)
-        .send({
-          status: false,
-          message: "Both password and createdBy are required",
-        });
+      return res.status(400).send({
+        status: false,
+        message: "Both password and createdBy are required",
+      });
     }
     const passwordRegex =
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$/;
@@ -56,12 +54,10 @@ const createUser = async function (req, res) {
 
     if (createdBy === "admin") {
       if (!adminId || !agentId) {
-        return res
-          .status(400)
-          .send({
-            status: false,
-            messge: "Both adminId and agent id is required",
-          });
+        return res.status(400).send({
+          status: false,
+          messge: "Both adminId and agent id is required",
+        });
       }
       const checkadmin = await adminModel.findById({
         _id: adminId,
@@ -91,12 +87,10 @@ const createUser = async function (req, res) {
 
     if (createdBy === "distributor") {
       if (!distributorId || !agentId) {
-        return res
-          .status(400)
-          .send({
-            status: false,
-            messge: "Both distributorId and agent id is required",
-          });
+        return res.status(400).send({
+          status: false,
+          messge: "Both distributorId and agent id is required",
+        });
       }
       const checkdistributor = await distributorModel.findById({
         _id: distributorId,
@@ -126,12 +120,10 @@ const createUser = async function (req, res) {
 
     if ((createdBy = "subDistributor")) {
       if (!subDistributorId || !agentId) {
-        return res
-          .status(400)
-          .send({
-            status: false,
-            messge: "Both subDistributorId and agent id is required",
-          });
+        return res.status(400).send({
+          status: false,
+          messge: "Both subDistributorId and agent id is required",
+        });
       }
       const checksubDistributor = await subDistributorModel.findById({
         _id: subDistributorId,
@@ -191,7 +183,10 @@ const getUser = async function (req, res) {
       return res.status(400).send({ status: false, message: "invalid id" });
     }
     if (userId) {
-      let getNserName = await userModel.findById({ _id: userId, banned: false });
+      let getNserName = await userModel.findById({
+        _id: userId,
+        banned: false,
+      });
 
       if (!getNserName) {
         return res.status(404).send({
@@ -201,7 +196,7 @@ const getUser = async function (req, res) {
       }
       return res.status(200).json(getNserName);
     }
-    const allData = await userModel.find({banned: false});
+    const allData = await userModel.find({ banned: false });
     if (allData.length === 0) {
       return res.status(404).send({
         status: false,
@@ -378,7 +373,6 @@ const updateUser = async function (req, res) {
           updateObject,
           { new: true }
         );
-        
       } else if (createdBy === "admin") {
         console.log("created by subDistributor>>>>>>>>>>>>>>>>");
         let adminId = getUser.adminId;
@@ -420,18 +414,18 @@ const updateUser = async function (req, res) {
           );
         }
       }
-      const updateDistributorBalance =
-          await distributorModel.findByIdAndUpdate(
-            { _id: distributorId },
-            { $inc: { balance: -balance } },
-            { new: true }
-          );
+      const updateDistributorBalance = await distributorModel.findByIdAndUpdate(
+        { _id: distributorId },
+        { $inc: { balance: -balance } },
+        { new: true }
+      );
     }
 
     if (subDistributorId) {
       const checksubDistributor = await subDistributorModel.findById({
-        subDistributorId, banned: false}
-      );
+        subDistributorId,
+        banned: false,
+      });
 
       if (!checksubDistributor || checksubDistributor.password !== password) {
         return res.status(400).send({
@@ -469,7 +463,7 @@ const updateUser = async function (req, res) {
       } else if (createdBy === "admin") {
         let distributorId = checksubDistributor.distributorId;
         let distributorData = await distributorModel.findById({
-          _id: distributorId
+          _id: distributorId,
         });
         if (distributorData.adminId.toString() === getUser.adminId.toString()) {
           updatedUser = await userModel.findOneAndUpdate(
@@ -559,4 +553,88 @@ const updateUser = async function (req, res) {
   }
 };
 
-module.exports = { createUser, getUser, updateUser };
+//_____________________________________update another user_________________________________________________
+
+const updateBalanceOfAnotherUser = async function (req, res) {
+  try {
+
+    const { senderUserId, receiverUserId, password, balance } = req.query;
+   
+    if(!senderUserId || !receiverUserId || !password || !balance ){
+      return res
+      .status(404)
+      .send({
+        status: false,
+        message: "senderUserId, receiverUserId, password, balance  all fields are required",
+      });
+    }
+    if (
+      !mongoose.isValidObjectId(senderUserId) ||
+      !mongoose.isValidObjectId(receiverUserId)
+    ) {
+      return res.status(400).send({ status: false, message: "Invalid ID" });
+    }
+    const checkSenderData = await userModel.findById({
+      _id: senderUserId,
+      banned: false,
+    });
+
+    if (!checkSenderData) {
+      return res
+        .status(404)
+        .send({
+          status: false,
+          message: "No data found as per this senderUserId",
+        });
+    }
+
+    const checkReceiverData = await userModel.findById({
+      _id: receiverUserId,
+      password: password,
+      banned: false,
+    });
+
+    if (!checkReceiverData) {
+      return res
+        .status(404)
+        .send({
+          status: false,
+          message: "No data found as per this receiverUserId",
+        });
+    }
+
+    const senderBalance = checkSenderData.balance;
+    if (senderBalance < balance) {
+      return res
+        .status(400)
+        .send({ status: false, message: "You have insufficient balance" });
+    }
+    const updateReceiverBalance = await userModel.findByIdAndUpdate(
+      { _id: receiverUserId },
+      { $inc: { balance: balance } },
+      { new: true }
+    );
+    const deductSenderBalance = await userModel.findByIdAndUpdate(
+      { _id: senderUserId },
+      { $inc: { balance: -balance } },
+      { new: true }
+    );
+    const result = {
+      senderUserId: senderUserId,
+      senderBalance: deductSenderBalance.balance,
+      receiverUserId: receiverUserId,
+      receiverUserId: receiverUserId,
+      receiverBalance: updateReceiverBalance.balance,
+    };
+
+    return res.status(200).json(result);
+  } catch (error) {
+    return res.status(500).send({ status: false, message: error.message });
+  }
+};
+module.exports = {
+  createUser,
+  getUser,
+  updateUser,
+  updateBalanceOfAnotherUser,
+};
