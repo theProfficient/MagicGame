@@ -31,7 +31,10 @@ const createUser = async function (req, res) {
     if (!password || !createdBy) {
       return res
         .status(400)
-        .send({ status: false, message: "Both password and createdBy are required" });
+        .send({
+          status: false,
+          message: "Both password and createdBy are required",
+        });
     }
     const passwordRegex =
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$/;
@@ -51,11 +54,19 @@ const createUser = async function (req, res) {
       });
     }
 
-    if (createdBy === 'admin') {
-      if(!adminId || !agentId){
-        return res.status(400).send({status:false, messge:"Both adminId and agent id is required"})
+    if (createdBy === "admin") {
+      if (!adminId || !agentId) {
+        return res
+          .status(400)
+          .send({
+            status: false,
+            messge: "Both adminId and agent id is required",
+          });
       }
-      const checkadmin = await adminModel.findById({ _id: adminId, banned:false});
+      const checkadmin = await adminModel.findById({
+        _id: adminId,
+        banned: false,
+      });
       console.log(checkadmin);
       if (!checkadmin) {
         return res.status(400).send({
@@ -63,7 +74,10 @@ const createUser = async function (req, res) {
           message: "No one is present as per this admin id",
         });
       }
-      const checkAgent = await agentModel.findById({ _id: agentId, banned:false });
+      const checkAgent = await agentModel.findById({
+        _id: agentId,
+        banned: false,
+      });
 
       if (!checkAgent) {
         return res.status(400).send({
@@ -75,12 +89,18 @@ const createUser = async function (req, res) {
       return res.status(201).json(userCreated);
     }
 
-    if (createdBy === 'distributor') {
-      if(!distributorId || !agentId){
-        return res.status(400).send({status:false, messge:"Both distributorId and agent id is required"})
+    if (createdBy === "distributor") {
+      if (!distributorId || !agentId) {
+        return res
+          .status(400)
+          .send({
+            status: false,
+            messge: "Both distributorId and agent id is required",
+          });
       }
       const checkdistributor = await distributorModel.findById({
-        _id: distributorId, banned:false
+        _id: distributorId,
+        banned: false,
       });
 
       if (!checkdistributor) {
@@ -89,7 +109,10 @@ const createUser = async function (req, res) {
           message: "No one is present as per this DistributorId id",
         });
       }
-        const checkAgent = await agentModel.findById({ _id: agentId, banned:false });
+      const checkAgent = await agentModel.findById({
+        _id: agentId,
+        banned: false,
+      });
 
       if (!checkAgent) {
         return res.status(400).send({
@@ -115,12 +138,18 @@ const createUser = async function (req, res) {
       return res.status(201).json(userCreated);
     }
 
-    if (createdBy = "subDistributor") {
-      if(!subDistributorId || !agentId){
-        return res.status(400).send({status:false, messge:"Both subDistributorId and agent id is required"})
+    if ((createdBy = "subDistributor")) {
+      if (!subDistributorId || !agentId) {
+        return res
+          .status(400)
+          .send({
+            status: false,
+            messge: "Both subDistributorId and agent id is required",
+          });
       }
       const checksubDistributor = await subDistributorModel.findById({
-        _id: subDistributorId, banned:false
+        _id: subDistributorId,
+        banned: false,
       });
 
       if (!checksubDistributor) {
@@ -129,7 +158,10 @@ const createUser = async function (req, res) {
           message: "No one is present as per this subDistributor id",
         });
       }
-      const checkAgent = await agentModel.findById({ _id: agentId, banned:false });
+      const checkAgent = await agentModel.findById({
+        _id: agentId,
+        banned: false,
+      });
 
       if (!checkAgent) {
         return res.status(400).send({
@@ -142,8 +174,11 @@ const createUser = async function (req, res) {
       return res.status(201).json(userCreated);
     }
 
-    if (createdBy = "agent") {
-      const checkAgent = await agentModel.findById({ _id: agentId, banned:false });
+    if ((createdBy = "agent")) {
+      const checkAgent = await agentModel.findById({
+        _id: agentId,
+        banned: false,
+      });
 
       if (!checkAgent) {
         return res.status(400).send({
@@ -163,8 +198,6 @@ const createUser = async function (req, res) {
 };
 //________________________________get userData____________________________
 
-
-
 const getUser = async function (req, res) {
   try {
     let userId = req.query.userId;
@@ -182,7 +215,7 @@ const getUser = async function (req, res) {
       }
       return res.status(200).json(getNserName);
     }
-    const allData = await userModel.find({banned:false});
+    const allData = await userModel.find();
     if (allData.length === 0) {
       return res.status(404).send({
         status: false,
@@ -214,7 +247,7 @@ const updateUser = async function (req, res) {
       banned,
     } = queryData;
     let updatedUser;
-    
+
     if (userId && !mongoose.isValidObjectId(userId)) {
       return res.status(400).send({ status: false, message: "Invalid ID" });
     }
@@ -230,7 +263,10 @@ const updateUser = async function (req, res) {
     const createdBy = getUser.createdBy;
 
     if (adminId) {
-      const checkadmin = await adminModel.findById({_id:adminId, banned:false});
+      const checkadmin = await adminModel.findById({
+        _id: adminId,
+        banned: false,
+      });
 
       if (!checkadmin || checkadmin.password !== password) {
         return res.status(400).send({
@@ -242,6 +278,13 @@ const updateUser = async function (req, res) {
       const updateObject = {};
 
       if (balance && !getUser.banned) {
+        const adminBalance = checkadmin.balance;
+        if (adminBalance < balance) {
+          return res.status(400).send({
+            status: false,
+            message: "Admin has insufficient balance ",
+          });
+        }
         updateObject.balance = getUser.balance + Number(balance);
       }
 
@@ -254,38 +297,73 @@ const updateUser = async function (req, res) {
           updateObject,
           { new: true }
         );
+        const updateAdminBalance = await adminModel.findByIdAndUpdate(
+          { _id: adminId },
+          { $inc: { balance: -balance } },
+          { new: true }
+        );
       } else if (createdBy === "distributor") {
-        let distributorId = getUser.distributorId
-        let distributorData = await distributorModel.findById({_id:distributorId })
-        if(distributorData.adminId.toString() === adminId){
-          updatedUser = await userModel
-          .findOneAndUpdate({ _id: userId }, updateObject, { new: true });
+        let distributorId = getUser.distributorId;
+        let distributorData = await distributorModel.findById({
+          _id: distributorId,
+          banned: false,
+        });
+        if (distributorData.adminId.toString() === adminId) {
+          updatedUser = await userModel.findOneAndUpdate(
+            { _id: userId },
+            updateObject,
+            { new: true }
+          );
         }
       } else if (createdBy === "subDistributor") {
-        let subDistributorId = getUser.subDistributorId
-        let subDistributorData = await subDistributorModel.findById({_id:subDistributorId});
-        let distributorId = subDistributorData.distributorId
-        let distributorData = await distributorModel.findById({_id:distributorId})
-        if(distributorData.adminId.toString() === adminId){
-          updatedUser = await userModel
-          .findOneAndUpdate({ _id: userId }, updateObject, { new: true });
+        let subDistributorId = getUser.subDistributorId;
+        let subDistributorData = await subDistributorModel.findById({
+          _id: subDistributorId,
+          banned: false,
+        });
+        let distributorId = subDistributorData.distributorId;
+        let distributorData = await distributorModel.findById({
+          _id: distributorId,
+          banned: false,
+        });
+        if (distributorData.adminId.toString() === adminId) {
+          updatedUser = await userModel.findOneAndUpdate(
+            { _id: userId },
+            updateObject,
+            { new: true }
+          );
         }
       } else if (createdBy === "agent") {
-        let agentId = getUser.agentId
-        let agentData = await agentModel.findById({_id:agentId});
-        let subDistributorId = agentData.subDistributorId
-        let subDistributorData = await subDistributorModel.findById({_id:subDistributorId});
-        let distributorId = subDistributorData.distributorId
-        let distributorData = await distributorModel.findById({_id:distributorId})
-        if(distributorData.adminId.toString() === adminId){
-          updatedUser = await userModel
-          .findOneAndUpdate({ _id: userId }, updateObject, { new: true });
+        let agentId = getUser.agentId;
+        let agentData = await agentModel.findById({
+          _id: agentId,
+          banned: false,
+        });
+        let subDistributorId = agentData.subDistributorId;
+        let subDistributorData = await subDistributorModel.findById({
+          _id: subDistributorId,
+          banned: false,
+        });
+        let distributorId = subDistributorData.distributorId;
+        let distributorData = await distributorModel.findById({
+          _id: distributorId,
+          banned: false,
+        });
+        if (distributorData.adminId.toString() === adminId) {
+          updatedUser = await userModel.findOneAndUpdate(
+            { _id: userId },
+            updateObject,
+            { new: true }
+          );
         }
+      }
     }
-  }
 
     if (distributorId) {
-      const checkdistributor = await distributorModel.findById({_id:distributorId, banned:false});
+      const checkdistributor = await distributorModel.findById({
+        _id: distributorId,
+        banned: false,
+      });
 
       if (!checkdistributor || checkdistributor.password !== password) {
         return res.status(400).send({
@@ -297,13 +375,19 @@ const updateUser = async function (req, res) {
       const updateObject = {};
 
       if (balance && !getUser.banned) {
+        const distributorBalance = checkdistributor.balance;
+        if (distributorBalance < balance) {
+          return res.status(400).send({
+            status: false,
+            message: "distributor has insufficient balance ",
+          });
+        }
         updateObject.balance = getUser.balance + Number(balance);
       }
 
       if (banned) {
         updateObject.banned = banned;
       }
-      
 
       if (
         createdBy === "distributor" &&
@@ -314,39 +398,61 @@ const updateUser = async function (req, res) {
           updateObject,
           { new: true }
         );
+        const updateDistributorBalance =
+          await distributorModel.findByIdAndUpdate(
+            { _id: distributorId },
+            { $inc: { balance: -balance } },
+            { new: true }
+          );
       } else if (createdBy === "admin") {
         console.log("created by subDistributor>>>>>>>>>>>>>>>>");
-        let adminId = getUser.adminId
-        if(checkdistributor.adminId.toString() === adminId){
-          updatedUser = await userModel
-          .findOneAndUpdate({ _id: userId }, updateObject, { new: true });
+        let adminId = getUser.adminId;
+        if (checkdistributor.adminId.toString() === adminId) {
+          updatedUser = await userModel.findOneAndUpdate(
+            { _id: userId },
+            updateObject,
+            { new: true }
+          );
         }
-        
-      }
-      else if (createdBy === "subDistributor") {
+      } else if (createdBy === "subDistributor") {
         console.log("created by subDistributor>>>>>>>>>>>>>>>>");
-        let subDistributorId = getUser.subDistributorId
-        let subDistributorData = await subDistributorModel.findById({_id:subDistributorId });
-        if(subDistributorData.distributorId.toString() === distributorId){
-          updatedUser = await userModel
-          .findOneAndUpdate({ _id: userId }, updateObject, { new: true });
+        let subDistributorId = getUser.subDistributorId;
+        let subDistributorData = await subDistributorModel.findById({
+          _id: subDistributorId,
+          banned: false,
+        });
+        if (subDistributorData.distributorId.toString() === distributorId) {
+          updatedUser = await userModel.findOneAndUpdate(
+            { _id: userId },
+            updateObject,
+            { new: true }
+          );
         }
       } else if (createdBy === "agent") {
         console.log("created by agent>>>>>>>>>>>>>>>>");
         const agentId = getUser.agentId;
-        const agentData = await agentModel.findById({_id:agentId})
-        let subDistributorId = agentData.subDistributorId
-        let subDistributorData = await subDistributorModel.findById({_id:subDistributorId});
-        if(subDistributorData.distributorId.toString() === distributorId){
-          updatedUser = await userModel
-          .findOneAndUpdate({ _id: userId }, updateObject, { new: true });
+        const agentData = await agentModel.findById({
+          _id: agentId,
+          banned: false,
+        });
+        let subDistributorId = agentData.subDistributorId;
+        let subDistributorData = await subDistributorModel.findById({
+          _id: subDistributorId,
+          banned: false,
+        });
+        if (subDistributorData.distributorId.toString() === distributorId) {
+          updatedUser = await userModel.findOneAndUpdate(
+            { _id: userId },
+            updateObject,
+            { new: true }
+          );
         }
       }
     }
 
     if (subDistributorId) {
-      const checksubDistributor = await subDistributorModel.findById({
-        _id:subDistributorId, banned:false }
+      const checksubDistributor = await subDistributorModel.findById(
+        subDistributorId
       );
 
       if (!checksubDistributor || checksubDistributor.password !== password) {
@@ -359,6 +465,13 @@ const updateUser = async function (req, res) {
       const updateObject = {};
 
       if (balance && !getUser.banned) {
+        const subDistributorBalance = checksubDistributor.balance;
+        if (subDistributorBalance < balance) {
+          return res.status(400).send({
+            status: false,
+            message: "subdistributor has insufficient balance ",
+          });
+        }
         updateObject.balance = getUser.balance + Number(balance);
       }
 
@@ -367,7 +480,7 @@ const updateUser = async function (req, res) {
       }
 
       if (
-       createdBy === "subDistributor" &&
+        createdBy === "subDistributor" &&
         getUser.subDistributorId.toString() === subDistributorId
       ) {
         updatedUser = await userModel.findOneAndUpdate(
@@ -375,26 +488,46 @@ const updateUser = async function (req, res) {
           updateObject,
           { new: true }
         );
-      }
-      else if (createdBy === "admin") {
+      } else if (createdBy === "admin") {
         let distributorId = checksubDistributor.distributorId;
-        let distributorData = await distributorModel.findById({_id:distributorId});
-        if(distributorData.adminId.toString() === getUser.adminId.toString()){
-          updatedUser = await userModel
-          .findOneAndUpdate({ _id: userId }, updateObject, { new: true });
+        let distributorData = await distributorModel.findById({
+          _id: distributorId,
+          banned: false,
+        });
+        if (distributorData.adminId.toString() === getUser.adminId.toString()) {
+          updatedUser = await userModel.findOneAndUpdate(
+            { _id: userId },
+            updateObject,
+            { new: true }
+          );
         }
       } else if (createdBy === "agent") {
         const agentId = getUser.agentId;
-        const agentData = await agentModel.findById({_id:agentId})
-        if(agentData.subDistributorId.toString() === subDistributorId){
-          updatedUser = await userModel
-          .findOneAndUpdate({ _id: userId }, updateObject, { new: true });
+        const agentData = await agentModel.findById({
+          _id: agentId,
+          banned: false,
+        });
+        if (agentData.subDistributorId.toString() === subDistributorId) {
+          updatedUser = await userModel.findOneAndUpdate(
+            { _id: userId },
+            updateObject,
+            { new: true }
+          );
         }
       }
+      const updateSubDistributorBalance =
+        await subDistributorModel.findByIdAndUpdate(
+          { _id: subDistributorId },
+          { $inc: { balance: -balance } },
+          { new: true }
+        );
     }
 
     if (agentId) {
-      const checkAgent = await agentModel.findById({_id:agentId, banned:false});
+      const checkAgent = await agentModel.findById({
+        _id: agentId,
+        banned: false,
+      });
 
       if (!checkAgent || checkAgent.password !== password) {
         return res.status(400).send({
@@ -406,6 +539,13 @@ const updateUser = async function (req, res) {
       const updateObject = {};
 
       if (balance && !getUser.banned) {
+        const agentBalance = checkAgent.balance;
+        if (agentBalance < balance) {
+          return res.status(400).send({
+            status: false,
+            message: "agent has insufficient balance ",
+          });
+        }
         updateObject.balance = getUser.balance + Number(balance);
       }
 
@@ -413,14 +553,25 @@ const updateUser = async function (req, res) {
         updateObject.banned = banned;
       }
 
-      if ((createdBy === "agent" || createdBy === "subDistributor" || createdBy === "distributor" || createdBy === "admin") && getUser.agentId.toString() === agentId) {
+      if (
+        (createdBy === "agent" ||
+          createdBy === "subDistributor" ||
+          createdBy === "distributor" ||
+          createdBy === "admin") &&
+        getUser.agentId.toString() === agentId
+      ) {
         updatedUser = await userModel.findOneAndUpdate(
           { _id: userId, agentId: agentId },
           updateObject,
           { new: true }
         );
+      }
+      const updateAgentBalance = await agentModel.findByIdAndUpdate(
+        { _id: agentId },
+        { $inc: { balance: -balance } },
+        { new: true }
+      );
     }
-  }
 
     if (!updatedUser) {
       return res.status(404).json({ status: false, message: "User not found" });

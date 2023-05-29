@@ -116,6 +116,7 @@ const getdistributorData = async function (req, res) {
 };
 
 //_______________________update distributorData_______________
+
 const updateDistributorData = async function (req, res) {
   try {
     const { adminId, password, distributorId, banned, balance } = req.query;

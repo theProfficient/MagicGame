@@ -5,8 +5,6 @@ const adminModel = require("../model/adminModel");
 const distributorModel = require("../model/distributorModel");
 const subDistributorModel = require("../model/subDistributorModel");
 
-//________________create agent________________________________
-
 const createAgent = async function (req, res) {
   try {
     let bodyData = req.body;
@@ -32,7 +30,10 @@ const createAgent = async function (req, res) {
     if (!password || !createdBy) {
       return res
         .status(400)
-        .send({ status: false, message: "Both password and createdBy are required" });
+        .send({
+          status: false,
+          message: "Both password and createdBy are required",
+        });
     }
     const passwordRegex =
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$/;
@@ -54,14 +55,15 @@ const createAgent = async function (req, res) {
 
     if (createdBy === "admin") {
       if (!adminId || !subDistributorId) {
-        return res
-          .status(400)
-          .send({
-            status: false,
-            messge: "Both adminId and subDistributor id is required",
-          });
+        return res.status(400).send({
+          status: false,
+          messge: "Both adminId and subDistributor id is required",
+        });
       }
-      const checkadmin = await adminModel.findById({ _id: adminId, banned:false});
+      const checkadmin = await adminModel.findById({
+        _id: adminId,
+        banned: false,
+      });
       console.log(checkadmin);
       if (!checkadmin) {
         return res.status(400).send({
@@ -70,7 +72,8 @@ const createAgent = async function (req, res) {
         });
       }
       const checksubDistributor = await subDistributorModel.findById({
-        _id: subDistributorId, banned:false
+        _id: subDistributorId,
+        banned: false,
       });
 
       if (!checksubDistributor) {
@@ -85,15 +88,14 @@ const createAgent = async function (req, res) {
 
     if (createdBy === "distributor") {
       if (!distributorId || !subDistributorId) {
-        return res
-          .status(400)
-          .send({
-            status: false,
-            messge: "Both distributorId and subDistributor id is required",
-          });
+        return res.status(400).send({
+          status: false,
+          messge: "Both distributorId and subDistributor id is required",
+        });
       }
       const checkdistributor = await distributorModel.findById({
-        _id: distributorId, banned:false
+        _id: distributorId,
+        banned: false,
       });
 
       if (!checkdistributor) {
@@ -103,7 +105,8 @@ const createAgent = async function (req, res) {
         });
       }
       const checksubDistributor = await subDistributorModel.findById({
-        _id: subDistributorId, banned:false
+        _id: subDistributorId,
+        banned: false,
       });
 
       if (!checksubDistributor) {
@@ -123,7 +126,8 @@ const createAgent = async function (req, res) {
           .send({ status: false, messge: " subDistributorId is required" });
       }
       const checksubDistributor = await subDistributorModel.findById({
-        _id: subDistributorId, banned:false
+        _id: subDistributorId,
+        banned: false,
       });
 
       if (!checksubDistributor) {
@@ -154,7 +158,10 @@ const getAgentData = async function (req, res) {
       return res.status(400).send({ status: false, message: "invalid id" });
     }
     if (agentId) {
-      const agentDataIsExist = await agentModel.findById({ _id: agentId, banned:false });
+      const agentDataIsExist = await agentModel.findById({
+        _id: agentId,
+        banned: false,
+      });
       if (!agentDataIsExist) {
         return res
           .status(404)
@@ -163,49 +170,26 @@ const getAgentData = async function (req, res) {
       return res.status(200).json(agentDataIsExist);
     }
 
-    const getAllAgentData = await agentModel.find({banned:false});
+    const getAllAgentData = await agentModel.find({ banned: false });
     return res.status(200).json(getAllAgentData);
   } catch (err) {
     return res.status(500).send({ status: false, message: err.message });
   }
 };
 
-// const updateAgentData = async function (req, res) {
-//   try {
-//     let agentId = req.query.agentId;
-//     let queryData = req.query;
-//     let { balance, usersData, userName, userId, dateOfIssued } = queryData;
-
-//     if (!mongoose.Types.ObjectId.isValid(agentId)) {
-//       return res
-//         .status(400)
-//         .send({ status: false, message: "invalid agentId" });
-//     }
-
-//     const agentDataIsExist = await agentModel.findById({ _id: agentId });
-//     if (!agentDataIsExist) {
-//       return res.status(404).send({
-//         status: false,
-//         message: "data is not present per this agentId",
-//       });
-//     }
-
-//     const updateData = await agentModel.findByIdAndUpdate(
-//       { _id: agentId },
-//       { $inc: { balance: balance } },
-//       { new: true }
-//     );
-//     return res.status(200).json(updateData);
-//   } catch (err) {
-//     return res.status(500).send({ status: false, message: err.message });
-//   }
-// };
-
 //__________________________updateUserByAgent_____________________________
 
 const updateUserByAgent = async function (req, res) {
   try {
-    const { agentId, distributorId, adminId, subDistributorId, password,  banned, balance } = req.query;
+    const {
+      agentId,
+      distributorId,
+      adminId,
+      subDistributorId,
+      password,
+      banned,
+      balance,
+    } = req.query;
     let updatedAgent;
 
     if (!agentId) {
@@ -217,7 +201,7 @@ const updateUserByAgent = async function (req, res) {
     if (!mongoose.isValidObjectId(agentId)) {
       return res.status(400).send({ status: false, message: "Invalid ID" });
     }
-    const checkAgent = await agentModel.findById({ _id: agentId});
+    const checkAgent = await agentModel.findById({ _id: agentId });
     if (!checkAgent || checkAgent.banned === true) {
       return res.status(404).send({
         status: false,
@@ -225,8 +209,12 @@ const updateUserByAgent = async function (req, res) {
       });
     }
     const createdBy = checkAgent.createdBy;
+
     if (adminId) {
-      const checkadmin = await adminModel.findById({_id:adminId,banned:false});
+      const checkadmin = await adminModel.findById({
+        _id: adminId,
+        banned: false,
+      });
 
       if (!checkadmin || checkadmin.password !== password) {
         return res.status(400).send({
@@ -238,6 +226,13 @@ const updateUserByAgent = async function (req, res) {
       const updateObject = {};
 
       if (balance && !checkAgent.banned) {
+        const adminBalance = checkadmin.balance;
+        if (adminBalance < balance) {
+          return res.status(400).send({
+            status: false,
+            message: "Admin has insufficient balance ",
+          });
+        }
         updateObject.balance = checkAgent.balance + Number(balance);
       }
 
@@ -251,109 +246,173 @@ const updateUserByAgent = async function (req, res) {
           updateObject,
           { new: true }
         );
+
       } else if (createdBy === "distributor") {
-        let distributorId = checkAgent.distributorId
-        let findDistibutor = await distributorModel.findById({_id:distributorId})
-        if(findDistibutor.adminId.toString() === adminId){
-        updatedAgent = await agentModel
-          .findOneAndUpdate({ _id: agentId }, updateObject, { new: true })
-        }
-      }else if (createdBy === "subDistributor") {
-        let subDistributorId = checkAgent.subDistributorId
-        let subDistributor = await subDistributorModel.findById({_id:subDistributorId})
-        let distributorId = subDistributor.distributorId
-        let findDistibutor = await distributorModel.findById({_id:distributorId})
-        if(findDistibutor.adminId.toString() === adminId){
-          updatedAgent = await agentModel
-            .findOneAndUpdate({ _id: agentId }, updateObject, { new: true })
-          }
-      }
-    }
-      if (distributorId) {
-        const checkdistributor = await distributorModel.findById({_id:distributorId, banned:false});
-  
-        if (!checkdistributor || checkdistributor.password !== password) {
-          return res.status(400).send({
-            status: false,
-            message: "You are not authorized to update user data",
-          });
-        }
-  
-        const updateObject = {};
-  
-        if (balance && !checkAgent.banned) {
-          updateObject.balance = checkAgent.balance + Number(balance);
-        }
-  
-        if (banned) {
-          updateObject.banned = banned;
-        }
-        
-        if (
-          createdBy === "admin"
-        ) {
-          if(checkAgent.adminId.toString() === checkdistributor.adminId.toString()){
-            updatedAgent = await agentModel
-              .findOneAndUpdate({ _id: agentId }, updateObject, { new: true })
-            }
-        } else if (
-          createdBy === "distributor" &&
-          checkAgent.distributorId.toString() === distributorId
-        ) {
+        let distributorId = checkAgent.distributorId;
+        let findDistibutor = await distributorModel.findById({
+          _id: distributorId,
+          banned: false,
+        });
+        if (findDistibutor.adminId.toString() === adminId) {
           updatedAgent = await agentModel.findOneAndUpdate(
-            { _id: agentId, distributorId: distributorId },
+            { _id: agentId },
             updateObject,
             { new: true }
           );
-        } 
-       else if (
-          createdBy === "subDistributor"
-        ) {
-          let subDistributorId = checkAgent.subDistributorId ;
-          let distributor = await subDistributorModel.findById({_id:subDistributorId})
-          if(distributor.distributorId.toString() === distributorId){
-            updatedAgent = await agentModel
-              .findOneAndUpdate({ _id: agentId }, updateObject, { new: true })
-            }
         }
+      } else if (createdBy === "subDistributor") {
+        let subDistributorId = checkAgent.subDistributorId;
+        let subDistributor = await subDistributorModel.findById({
+          _id: subDistributorId,
+          banned: false,
+        });
+        let distributorId = subDistributor.distributorId;
+        let findDistibutor = await distributorModel.findById({
+          _id: distributorId,
+          banned: false,
+        });
+        if (findDistibutor.adminId.toString() === adminId) {
+          updatedAgent = await agentModel.findOneAndUpdate(
+            { _id: agentId },
+            updateObject,
+            { new: true }
+          );
+        }
+      }
+      const updateAdminBalance = await adminModel.findByIdAndUpdate(
+        { _id: adminId },
+        { $inc: { balance: -balance } },
+        { new: true }
+      );
+    }
+    if (distributorId) {
+      const checkdistributor = await distributorModel.findById({
+        _id: distributorId,
+        banned: false,
+      });
+
+      if (!checkdistributor || checkdistributor.password !== password) {
+        return res.status(400).send({
+          status: false,
+          message: "You are not authorized to update user data",
+        });
       }
 
-      if (subDistributorId) {
-        const checkSubDistributor = await subDistributorModel.findById({_id:subDistributorId, banned:false});
-  
-        if (!checkSubDistributor || checkSubDistributor.password !== password) {
+      const updateObject = {};
+
+      if (balance && !checkAgent.banned) {
+        const distributorBalance = checkdistributor.balance;
+        if (adminBalance < balance) {
           return res.status(400).send({
             status: false,
-            message: "You are not authorized to update user data",
+            message: "Admin has insufficient balance ",
           });
         }
-  
-        const updateObject = {};
-  
-        if (balance && !checkAgent.banned) {
-          updateObject.balance = checkAgent.balance + Number(balance);
-        }
-  
-        if (banned) {
-          updateObject.banned = banned;
-        }
-        
-        if (
-         (createdBy === "admin" || createdBy === "distributor" || createdBy === "subDistributor" ) &&
-          checkAgent.subDistributorId.toString() === subDistributorId
-        ) {
+        updateObject.balance = checkAgent.balance + Number(balance);
+      }
+
+      if (banned) {
+        updateObject.banned = banned;
+      }
+
+      if (createdBy === "admin") {
+        let admin = await distributorModel.findById({
+          _id: distributorId,
+          banned: false,
+        });
+        if (checkAgent.adminId.toString() === admin.adminId.toString()) {
           updatedAgent = await agentModel.findOneAndUpdate(
-            { _id: agentId, subDistributorId: subDistributorId },
+            { _id: agentId },
             updateObject,
             { new: true }
           );
-         }
+        }
+      } else if (
+        createdBy === "distributor" &&
+        checkAgent.distributorId.toString() === distributorId
+      ) {
+        updatedAgent = await agentModel.findOneAndUpdate(
+          { _id: agentId, distributorId: distributorId },
+          updateObject,
+          { new: true }
+        );
       }
-      if (!updatedAgent) {
-        return res.status(404).json({ status: false, message: "updatedAgent not found" });
+      if (createdBy === "subDistributor") {
+        let subDistributorId = checkAgent.subDistributorId;
+        let distributor = await subDistributorModel.findById({
+          _id: subDistributorId,
+          banned: false,
+        });
+        if (distributor.distributorId.toString() === distributorId) {
+          updatedAgent = await agentModel.findOneAndUpdate(
+            { _id: agentId },
+            updateObject,
+            { new: true }
+          );
+        }
       }
-  
-      return res.status(200).json(updatedAgent);
+      const updateDistributorBalance = await distributorModel.findByIdAndUpdate(
+        { _id: distributorId },
+        { $inc: { balance: -balance } },
+        { new: true }
+      );
+    }
+
+    if (subDistributorId) {
+      const checkSubDistributor = await subDistributorModel.findById({
+        _id: subDistributorId,
+        banned: false,
+      });
+
+      if (!checkSubDistributor || checkSubDistributor.password !== password) {
+        return res.status(400).send({
+          status: false,
+          message: "You are not authorized to update user data",
+        });
+      }
+
+      const updateObject = {};
+
+      if (balance && !checkSubDistributor.banned) {
+        const subDistributorBalance = checkSubDistributor.balance;
+        if (subDistributorBalance < balance) {
+          return res.status(400).send({
+            status: false,
+            message: "subdistributor has insufficient balance ",
+          });
+        }
+        updateObject.balance = checkAgent.balance + Number(balance);
+      }
+
+      if (banned) {
+        updateObject.banned = banned;
+      }
+
+      if (
+        (createdBy === "admin" ||
+          createdBy === "distributor" ||
+          createdBy === "subDistributor") &&
+        checkAgent.subDistributorId.toString() === subDistributorId
+      ) {
+        updatedAgent = await agentModel.findOneAndUpdate(
+          { _id: agentId, subDistributorId: subDistributorId },
+          updateObject,
+          { new: true }
+        );
+        const updateSubDistributorBalance = await subDistributorModel.findByIdAndUpdate(
+          { _id: subDistributorId },
+          { $inc: { balance: -balance } },
+          { new: true }
+        );
+      }
+    }
+    if (!updatedAgent) {
+      return res
+        .status(404)
+        .json({ status: false, message: "updatedAgent not found" });
+    }
+
+    return res.status(200).json(updatedAgent);
   } catch (err) {
     return res.status(500).send({
       status: false,
