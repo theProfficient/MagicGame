@@ -61,7 +61,7 @@ const getAdmin = async function (req, res) {
       return res.status(400).send({ status: false, message: "invalid id" });
     }
     if (adminId) {
-      const getNewAdmin = await adminModel.findOne({ _id: adminId });
+      const getNewAdmin = await adminModel.findOne({ _id: adminId, banned: false});
 
       if (!getNewAdmin) {
         return res.status(404).send({
@@ -71,7 +71,7 @@ const getAdmin = async function (req, res) {
       }
       return res.status(200).json(getNewAdmin);
     }
-    const allAdminData = await adminModel.find();
+    const allAdminData = await adminModel.find({banned: false});
     if (allAdminData.length === 0) {
       return res.status(404).send({
         status: false,

@@ -239,7 +239,6 @@ const updateSubDistributorData = async function (req, res) {
         let distributorId = getUsubDistributor.distributorId;
         let distributorData = await distributorModel.findOne({
           _id: distributorId,
-          banned: false,
         });
         if (distributorData.adminId.toString() === adminId) {
           updatedSubDistributor = await subDistributorModel.findOneAndUpdate(
