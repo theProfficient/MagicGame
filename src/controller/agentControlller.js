@@ -136,7 +136,7 @@ const createAgent = async function (req, res) {
           message: "No one is present as per this subDistributor id",
         });
       }
-      const agentCreated = await userModel.create(bodyData);
+      const agentCreated = await agentModel.create(bodyData);
 
       return res.status(201).json(agentCreated);
     }
@@ -260,21 +260,51 @@ const updateUserByAgent = async function (req, res) {
           );
         }
       } else if (createdBy === "subDistributor") {
-        let subDistributorId = checkAgent.subDistributorId;
-        let subDistributor = await subDistributorModel.findById({
-          _id: subDistributorId,
-        });
-        let distributorId = subDistributor.distributorId;
-        let findDistibutor = await distributorModel.findById({
-          _id: distributorId
-        });
-        if (findDistibutor.adminId.toString() === adminId) {
+        const checkAuth = await agentModel.aggregate([
+          {
+            $match: { _id: new mongoose.Types.ObjectId(agentId) }
+          },    {
+            $lookup: {
+              from: "subdistributors",
+              localField: "subDistributorId",
+              foreignField: "_id",
+              as: "subDistributor"
+            }
+          },
+          {
+            $lookup: {
+              from: "distributordatas",
+              localField: "subDistributor.distributorId",
+              foreignField: "_id",
+              as: "distributor"
+            }
+          },
+          {
+            $lookup: {
+              from: "admins",
+              localField: "distributor.adminId",
+              foreignField: "_id",
+              as: "admin"
+            }
+          },
+          {
+            $match: { "admin._id":new mongoose.Types.ObjectId(adminId) }
+          },
+          {
+            $set: updateObject
+      }
+    ]);
+    
+        if (!checkAuth || checkAuth.length === 0) {
+          return res.status(404).json({ status: false, message: "You are not authorized to update" });
+        }
+       
           updatedAgent = await agentModel.findOneAndUpdate(
             { _id: agentId },
             updateObject,
             { new: true }
           );
-        }
+        
       }
       const updateAdminBalance = await adminModel.findByIdAndUpdate(
         { _id: adminId },

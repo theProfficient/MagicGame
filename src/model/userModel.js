@@ -44,14 +44,27 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    pointsAllocated:{
+      type:Number,
+      default:0.00
+    },
+    usedPoints:{
+      type:Number,
+      default:0.00
+    },
+    commision:{
+      type:Number,
+      default:0.00
+    },
     ticketData: [
       {
         drawtime: {
           type: Date,
-          // default:new Date()
+           default:new Date()
         },
         drawid: {
-          type: String,
+          type: Number,
+          default:1000
         },
         retailerid: {
           type: String,

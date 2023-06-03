@@ -118,7 +118,7 @@ const createUser = async function (req, res) {
       return res.status(201).json(userCreated);
     }
 
-    if ((createdBy = "subDistributor")) {
+    if (createdBy === "subDistributor") {
       if (!subDistributorId || !agentId) {
         return res.status(400).send({
           status: false,
@@ -152,7 +152,7 @@ const createUser = async function (req, res) {
       return res.status(201).json(userCreated);
     }
 
-    if ((createdBy = "agent")) {
+    if (createdBy === "agent") {
       const checkAgent = await agentModel.findById({
         _id: agentId,
         banned: false,
@@ -213,6 +213,345 @@ const getUser = async function (req, res) {
 };
 
 //____________________________updateUser Data__________________________
+
+// const updateUser = async function (req, res) {
+//   try {
+//     const userId = req.query.userId;
+//     const queryData = req.query;
+//     const {
+//       agentId,
+//       subDistributorId,
+//       distributorId,
+//       adminId,
+//       password,
+//       balance,
+//       banned,
+//     } = queryData;
+//     let updatedUser;
+
+//     if (userId && !mongoose.isValidObjectId(userId)) {
+//       return res.status(400).send({ status: false, message: "Invalid ID" });
+//     }
+
+//     let getUser = await userModel.findById(userId);
+
+//     if (!getUser || getUser.banned) {
+//       return res
+//         .status(404)
+//         .send({ status: false, message: "User not found or banned" });
+//     }
+
+//     const createdBy = getUser.createdBy;
+
+//     if (adminId) {
+//       const checkadmin = await adminModel.findById({
+//         _id: adminId,
+//         banned: false,
+//       });
+
+//       if (!checkadmin || checkadmin.password !== password) {
+//         return res.status(400).send({
+//           status: false,
+//           message: "You are not authorized to update user data",
+//         });
+//       }
+
+//       const updateObject = {};
+
+//       if (balance && !getUser.banned) {
+//         const adminBalance = checkadmin.balance;
+//         if (adminBalance < balance) {
+//           return res.status(400).send({
+//             status: false,
+//             message: "Admin has insufficient balance ",
+//           });
+//         }
+//         updateObject.balance = getUser.balance + Number(balance);
+//       }
+
+//       if (banned) {
+//         updateObject.banned = banned;
+//       }
+//       if (createdBy === "admin" && getUser.adminId.toString() === adminId) {
+//         updatedUser = await userModel.findOneAndUpdate(
+//           { _id: userId, adminId: adminId },
+//           updateObject,
+//           { new: true }
+//         );
+//       } else if (createdBy === "distributor") {
+//         let distributorId = getUser.distributorId;
+//         let distributorData = await distributorModel.findById({
+//           _id: distributorId,
+//         });
+//         if (distributorData.adminId.toString() === adminId) {
+//           updatedUser = await userModel.findOneAndUpdate(
+//             { _id: userId },
+//             updateObject,
+//             { new: true }
+//           );
+//         }
+//       } else if (createdBy === "subDistributor") {
+//         let subDistributorId = getUser.subDistributorId;
+//         let subDistributorData = await subDistributorModel.findById({
+//           _id: subDistributorId,
+//         });
+//         let distributorId = subDistributorData.distributorId;
+//         let distributorData = await distributorModel.findById({
+//           _id: distributorId,
+//         });
+//         if (distributorData.adminId.toString() === adminId) {
+//           updatedUser = await userModel.findOneAndUpdate(
+//             { _id: userId },
+//             updateObject,
+//             { new: true }
+//           );
+//         }
+//       } else if (createdBy === "agent") {
+//         let agentId = getUser.agentId;
+//         let agentData = await agentModel.findById({
+//           _id: agentId,
+//         });
+//         let subDistributorId = agentData.subDistributorId;
+//         let subDistributorData = await subDistributorModel.findById({
+//           _id: subDistributorId,
+//         });
+//         let distributorId = subDistributorData.distributorId;
+//         let distributorData = await distributorModel.findById({
+//           _id: distributorId,
+//         });
+//         if (distributorData.adminId.toString() === adminId) {
+//           updatedUser = await userModel.findOneAndUpdate(
+//             { _id: userId },
+//             updateObject,
+//             { new: true }
+//           );
+//         }
+//       }
+//       const updateAdminBalance = await adminModel.findByIdAndUpdate(
+//         { _id: adminId },
+//         { $inc: { balance: -balance } },
+//         { new: true }
+//       );
+//     }
+
+//     if (distributorId) {
+//       const checkdistributor = await distributorModel.findById({
+//         _id: distributorId,
+//         banned: false,
+//       });
+
+//       if (!checkdistributor || checkdistributor.password !== password) {
+//         return res.status(400).send({
+//           status: false,
+//           message: "You are not authorized to update user data",
+//         });
+//       }
+
+//       const updateObject = {};
+
+//       if (balance && !getUser.banned) {
+//         const distributorBalance = checkdistributor.balance;
+//         if (distributorBalance < balance) {
+//           return res.status(400).send({
+//             status: false,
+//             message: "distributor has insufficient balance ",
+//           });
+//         }
+//         updateObject.balance = getUser.balance + Number(balance);
+//       }
+
+//       if (banned) {
+//         updateObject.banned = banned;
+//       }
+
+//       if (
+//         createdBy === "distributor" &&
+//         getUser.distributorId.toString() === distributorId
+//       ) {
+//         updatedUser = await userModel.findOneAndUpdate(
+//           { _id: userId, distributorId: distributorId },
+//           updateObject,
+//           { new: true }
+//         );
+//       } else if (createdBy === "admin") {
+//         console.log("created by subDistributor>>>>>>>>>>>>>>>>");
+//         let adminId = getUser.adminId;
+//         if (checkdistributor.adminId.toString() === adminId) {
+//           updatedUser = await userModel.findOneAndUpdate(
+//             { _id: userId },
+//             updateObject,
+//             { new: true }
+//           );
+//         }
+//       } else if (createdBy === "subDistributor") {
+//         console.log("created by subDistributor>>>>>>>>>>>>>>>>");
+//         let subDistributorId = getUser.subDistributorId;
+//         let subDistributorData = await subDistributorModel.findById({
+//           _id: subDistributorId,
+//         });
+//         if (subDistributorData.distributorId.toString() === distributorId) {
+//           updatedUser = await userModel.findOneAndUpdate(
+//             { _id: userId },
+//             updateObject,
+//             { new: true }
+//           );
+//         }
+//       } else if (createdBy === "agent") {
+//         console.log("created by agent>>>>>>>>>>>>>>>>");
+//         const agentId = getUser.agentId;
+//         const agentData = await agentModel.findById({
+//           _id: agentId,
+//         });
+//         let subDistributorId = agentData.subDistributorId;
+//         let subDistributorData = await subDistributorModel.findById({
+//           _id: subDistributorId,
+//         });
+//         if (subDistributorData.distributorId.toString() === distributorId) {
+//           updatedUser = await userModel.findOneAndUpdate(
+//             { _id: userId },
+//             updateObject,
+//             { new: true }
+//           );
+//         }
+//       }
+//       const updateDistributorBalance = await distributorModel.findByIdAndUpdate(
+//         { _id: distributorId },
+//         { $inc: { balance: -balance } },
+//         { new: true }
+//       );
+//     }
+
+//     if (subDistributorId) {
+//       const checksubDistributor = await subDistributorModel.findById({
+//         subDistributorId,
+//         banned: false,
+//       });
+
+//       if (!checksubDistributor || checksubDistributor.password !== password) {
+//         return res.status(400).send({
+//           status: false,
+//           message: "You are not authorized to update user data",
+//         });
+//       }
+
+//       const updateObject = {};
+
+//       if (balance && !getUser.banned) {
+//         const subDistributorBalance = checksubDistributor.balance;
+//         if (subDistributorBalance < balance) {
+//           return res.status(400).send({
+//             status: false,
+//             message: "subdistributor has insufficient balance ",
+//           });
+//         }
+//         updateObject.balance = getUser.balance + Number(balance);
+//       }
+
+//       if (banned) {
+//         updateObject.banned = banned;
+//       }
+
+//       if (
+//         createdBy === "subDistributor" &&
+//         getUser.subDistributorId.toString() === subDistributorId
+//       ) {
+//         updatedUser = await userModel.findOneAndUpdate(
+//           { _id: userId, subDistributorId: subDistributorId },
+//           updateObject,
+//           { new: true }
+//         );
+//       } else if (createdBy === "admin") {
+//         let distributorId = checksubDistributor.distributorId;
+//         let distributorData = await distributorModel.findById({
+//           _id: distributorId,
+//         });
+//         if (distributorData.adminId.toString() === getUser.adminId.toString()) {
+//           updatedUser = await userModel.findOneAndUpdate(
+//             { _id: userId },
+//             updateObject,
+//             { new: true }
+//           );
+//         }
+//       } else if (createdBy === "agent") {
+//         const agentId = getUser.agentId;
+//         const agentData = await agentModel.findById({
+//           _id: agentId,
+//         });
+//         if (agentData.subDistributorId.toString() === subDistributorId) {
+//           updatedUser = await userModel.findOneAndUpdate(
+//             { _id: userId },
+//             updateObject,
+//             { new: true }
+//           );
+//         }
+//       }
+//       const updateSubDistributorBalance =
+//         await subDistributorModel.findByIdAndUpdate(
+//           { _id: subDistributorId },
+//           { $inc: { balance: -balance } },
+//           { new: true }
+//         );
+//     }
+
+//     if (agentId) {
+//       const checkAgent = await agentModel.findById({
+//         _id: agentId,
+//         banned: false,
+//       });
+
+//       if (!checkAgent || checkAgent.password !== password) {
+//         return res.status(400).send({
+//           status: false,
+//           message: "You are not authorized to update user data",
+//         });
+//       }
+
+//       const updateObject = {};
+
+//       if (balance && !getUser.banned) {
+//         const agentBalance = checkAgent.balance;
+//         if (agentBalance < balance) {
+//           return res.status(400).send({
+//             status: false,
+//             message: "agent has insufficient balance ",
+//           });
+//         }
+//         updateObject.balance = getUser.balance + Number(balance);
+//       }
+
+//       if (banned) {
+//         updateObject.banned = banned;
+//       }
+
+//       if (
+//         (createdBy === "agent" ||
+//           createdBy === "subDistributor" ||
+//           createdBy === "distributor" ||
+//           createdBy === "admin") &&
+//         getUser.agentId.toString() === agentId
+//       ) {
+//         updatedUser = await userModel.findOneAndUpdate(
+//           { _id: userId, agentId: agentId },
+//           updateObject,
+//           { new: true }
+//         );
+//       }
+//       const updateAgentBalance = await agentModel.findByIdAndUpdate(
+//         { _id: agentId },
+//         { $inc: { balance: -balance } },
+//         { new: true }
+//       );
+//     }
+
+//     if (!updatedUser) {
+//       return res.status(404).json({ status: false, message: "User not found" });
+//     }
+
+//     return res.status(200).json(updatedUser);
+//   } catch (error) {
+//     return res.status(500).send({ status: false, message: error.message });
+//   }
+// };
 
 const updateUser = async function (req, res) {
   try {
@@ -291,44 +630,114 @@ const updateUser = async function (req, res) {
           );
         }
       } else if (createdBy === "subDistributor") {
-        let subDistributorId = getUser.subDistributorId;
-        let subDistributorData = await subDistributorModel.findById({
-          _id: subDistributorId,
-        });
-        let distributorId = subDistributorData.distributorId;
-        let distributorData = await distributorModel.findById({
-          _id: distributorId,
-        });
-        if (distributorData.adminId.toString() === adminId) {
-          updatedUser = await userModel.findOneAndUpdate(
-            { _id: userId },
-            updateObject,
-            { new: true }
-          );
+        // console.log(getUser._id === new);
+        const checkAuth = await userModel.aggregate([
+          {
+            $match: { _id: new mongoose.Types.ObjectId(userId) },
+          },
+          {
+            $lookup: {
+              from: "subdistributors",
+              localField: "subDistributorId",
+              foreignField: "_id",
+              as: "subDistributor",
+            },
+          },
+          {
+            $lookup: {
+              from: "distributordatas",
+              localField: "subDistributor.distributorId",
+              foreignField: "_id",
+              as: "distributor",
+            },
+          },
+          {
+            $lookup: {
+              from: "admins",
+              localField: "distributor.adminId",
+              foreignField: "_id",
+              as: "admin",
+            },
+          },
+          {
+            $match: { "admin._id": mongoose.Types.ObjectId(adminId) },
+          },
+          {
+            $set: updateObject,
+          },
+        ]);
+
+        if (!checkAuth || checkAuth.length === 0) {
+          return res.status(404).json({
+            status: false,
+            message: "You are not authorized to update",
+          });
         }
+        updatedUser = await userModel.findOneAndUpdate(
+          { _id: mongoose.Types.ObjectId(userId) },
+          { $set: updateObject },
+          { new: true }
+        );
       } else if (createdBy === "agent") {
-        let agentId = getUser.agentId;
-        let agentData = await agentModel.findById({
-          _id: agentId,
-        });
-        let subDistributorId = agentData.subDistributorId;
-        let subDistributorData = await subDistributorModel.findById({
-          _id: subDistributorId,
-        });
-        let distributorId = subDistributorData.distributorId;
-        let distributorData = await distributorModel.findById({
-          _id: distributorId,
-        });
-        if (distributorData.adminId.toString() === adminId) {
-          updatedUser = await userModel.findOneAndUpdate(
-            { _id: userId },
-            updateObject,
-            { new: true }
-          );
+        const checkAuth = await userModel.aggregate([
+          {
+            $match: { _id: new mongoose.Types.ObjectId(userId) },
+          },
+          {
+            $lookup: {
+              from: "agentdatas",
+              localField: "agentId",
+              foreignField: "_id",
+              as: "agent",
+            },
+          },
+          {
+            $lookup: {
+              from: "subdistributors",
+              localField: "agent.subDistributorId",
+              foreignField: "_id",
+              as: "subDistributor",
+            },
+          },
+          {
+            $lookup: {
+              from: "distributordatas",
+              localField: "subDistributor.distributorId",
+              foreignField: "_id",
+              as: "distributor",
+            },
+          },
+          {
+            $lookup: {
+              from: "admins",
+              localField: "distributor.adminId",
+              foreignField: "_id",
+              as: "admin",
+            },
+          },
+          {
+            $match: { "admin._id": new mongoose.Types.ObjectId(adminId) },
+          },
+          {
+            $set: updateObject,
+          },
+        ]);
+
+        if (!checkAuth || checkAuth.length === 0) {
+          return res.status(404).json({
+            status: false,
+            message: "You are not authorized to update",
+          });
         }
+
+        updatedUser = await userModel.findOneAndUpdate(
+          { _id: new mongoose.Types.ObjectId(userId) },
+          { $set: updateObject },
+          { new: true }
+        );
       }
       const updateAdminBalance = await adminModel.findByIdAndUpdate(
-        { _id: adminId },
+        adminId,
         { $inc: { balance: -balance } },
         { new: true }
       );
@@ -397,22 +806,56 @@ const updateUser = async function (req, res) {
           );
         }
       } else if (createdBy === "agent") {
-        console.log("created by agent>>>>>>>>>>>>>>>>");
-        const agentId = getUser.agentId;
-        const agentData = await agentModel.findById({
-          _id: agentId,
-        });
-        let subDistributorId = agentData.subDistributorId;
-        let subDistributorData = await subDistributorModel.findById({
-          _id: subDistributorId,
-        });
-        if (subDistributorData.distributorId.toString() === distributorId) {
-          updatedUser = await userModel.findOneAndUpdate(
-            { _id: userId },
-            updateObject,
-            { new: true }
-          );
+        const checkAuth = await userModel.aggregate([
+          {
+            $match: { _id: new mongoose.Types.ObjectId(userId) },
+          },
+          {
+            $lookup: {
+              from: "agentdatas",
+              localField: "agentId",
+              foreignField: "_id",
+              as: "agent",
+            },
+          },
+          {
+            $lookup: {
+              from: "subdistributors",
+              localField: "agent.subDistributorId",
+              foreignField: "_id",
+              as: "subDistributor",
+            },
+          },
+          {
+            $lookup: {
+              from: "distributordatas",
+              localField: "subDistributor.distributorId",
+              foreignField: "_id",
+              as: "distributor",
+            },
+          },
+          {
+            $match: {
+              "distributor._id": new mongoose.Types.ObjectId(distributorId),
+            },
+          },
+          {
+            $set: updateObject,
+          },
+        ]);
+
+        if (!checkAuth || checkAuth.length === 0) {
+          return res.status(404).json({
+            status: false,
+            message: "You are not authorized to update",
+          });
         }
+
+        updatedUser = await userModel.findOneAndUpdate(
+          { _id: userId },
+          updateObject,
+          { new: true }
+        );
       }
       const updateDistributorBalance = await distributorModel.findByIdAndUpdate(
         { _id: distributorId },
@@ -557,15 +1000,13 @@ const updateUser = async function (req, res) {
 
 const updateBalanceOfAnotherUser = async function (req, res) {
   try {
-
     const { senderUserId, receiverUserId, password, balance } = req.query;
-   
-    if(!senderUserId || !receiverUserId || !password || !balance ){
-      return res
-      .status(404)
-      .send({
+
+    if (!senderUserId || !receiverUserId || !password || !balance) {
+      return res.status(404).send({
         status: false,
-        message: "senderUserId, receiverUserId, password, balance  all fields are required",
+        message:
+          "senderUserId, receiverUserId, password, balance  all fields are required",
       });
     }
     if (
@@ -580,12 +1021,10 @@ const updateBalanceOfAnotherUser = async function (req, res) {
     });
 
     if (!checkSenderData) {
-      return res
-        .status(404)
-        .send({
-          status: false,
-          message: "No data found as per this senderUserId",
-        });
+      return res.status(404).send({
+        status: false,
+        message: "No data found as per this senderUserId",
+      });
     }
 
     const checkReceiverData = await userModel.findById({
@@ -595,12 +1034,10 @@ const updateBalanceOfAnotherUser = async function (req, res) {
     });
 
     if (!checkReceiverData) {
-      return res
-        .status(404)
-        .send({
-          status: false,
-          message: "No data found as per this receiverUserId",
-        });
+      return res.status(404).send({
+        status: false,
+        message: "No data found as per this receiverUserId",
+      });
     }
 
     const senderBalance = checkSenderData.balance;
@@ -632,9 +1069,109 @@ const updateBalanceOfAnotherUser = async function (req, res) {
     return res.status(500).send({ status: false, message: error.message });
   }
 };
+
+//_________________________update ticketData__________________________
+
+const updateTicketData = async function(req,res){
+  try{
+    const userId = req.query.userId;
+    
+    let {drawtime, drawid, retailerid, ticketnumber, totalqty, totalpoints, setnames} = req.query ;
+    
+  }catch(error){
+    return res.status(500).send({status:false, message:error.message})
+  }
+}
+
+
+//_____________________get Balance_________________________
+
+const getBalance = async function (req, res) {
+  try {
+    const username = req.query.username;
+    if (!username) {
+      return res
+        .status(400)
+        .send({ status: false, message: "userName is required" });
+    }
+
+    const checkUserName = await userModel.findOne({ userName: username });
+
+    if (!checkUserName) {
+      return res
+        .status(400)
+        .send({ status: false, message: "No user is found" });
+    }
+    let result = [
+      {
+        CustomerEmailID: checkUserName.userName,
+        POINTSALLOTTED: checkUserName.pointsAllocated,
+        USEDPOINTS: checkUserName.usedPoints,
+        REDEEMPOINTS: null,
+        BALANCE_POINTS: checkUserName.balance,
+        COMMISSION: checkUserName.commision,
+        CustomerID: checkUserName.userName,
+        RETURNED_POINTS: null,
+        distsalecomm: null,
+        Type: "Retailer",
+        type1: "Player",
+      },
+    ];
+
+    return res.status(200).json(result);
+  } catch (error) {
+    return res.status(500).send({ status: false, message: error.message });
+  }
+};
+//_______________________________get result___________________________
+
+const getResult = async function (req, res) {
+  try {
+const RETAILERID = req.query.userId ;
+if(!RETAILERID){
+  return res.status(400).send({status:false, message:"RETAILERID is required"})
+}
+const checkRetailerId = await userModel.findById({_id:new mongoose.Type.ObjectId(RETAILERID)})
+if(!checkRetailerId){
+  return res.status(404).send({status:false, message:"data not found"})
+}
+const series1 = checkRetailerId.ticketData.filter(data => data.setnames === 1)
+const currentDate = new Date();
+const year = currentDate.getFullYear();
+const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // Adding leading zero if needed
+const day = String(currentDate.getDate()).padStart(2, '0'); // Adding leading zero if needed
+
+const formattedDate = `${year}-${month}-${day}`;
+
+const hours = String(currentDate.getHours()).padStart(2, '0'); // Adding leading zero if needed
+const minutes = String(currentDate.getMinutes()).padStart(2, '0'); // Adding leading zero if needed
+
+const formattedTime = `${hours}:${minutes}`;
+
+let drowId = checkRetailerId.ticketData.find(data => data.drawid)
+let seriesId = checkRetailerId.ticketData.find(data => data.setnames)
+const result = {
+  ID: 11722,
+  rcdt: new Date(),
+  result: ", 1051, 1104, 1288, 1356, 1411, 1552, 1699, 1793, 1876, 1975",
+  DrawID: drowId,
+  SeriesID: seriesId,
+  drawtimeFULL: formattedTime,
+  drawdate1: formattedDate,
+  drawtime: formattedTime
+}
+return res.status(200).json(result)
+  } catch (error) {
+    return res.status(500).send({ status: false, message: error.message });
+  }
+};
+
 module.exports = {
   createUser,
   getUser,
   updateUser,
   updateBalanceOfAnotherUser,
+  getBalance,
+  getResult,
+  updateTicketData,
 };
