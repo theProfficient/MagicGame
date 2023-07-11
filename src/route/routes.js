@@ -6,7 +6,7 @@ const distributorController = require("../controller/distributorController");
 const subDistributorController = require("../controller/subDistributorController");
 const agentController = require("../controller/agentControlller");
 const userController = require("../controller/userController");
-const ticketsController = require("../controller/ticketsController");
+// const ticketsController = require("../controller/ticketsController");
 
 //__________________________Admin___________
 
@@ -40,10 +40,13 @@ Router.get("/profileOfUser", userController.getUser);
 Router.put("/updateUserData", userController.updateUser);
 Router.put("/updateAnotherUserByUser", userController.updateBalanceOfAnotherUser);
 Router.get("/Home/GetSP_GET_POINT_BALANCE",  userController.getBalance)
+Router.get("/Home/Fun_sp_lastresult",  userController.getResult)
+Router.put("/Home/GetSP_GET_UPDATE_TICKETDATA",  userController.  updateTicketData,
+)
 //__________________________tickit________________________
 
-Router.post("/tickets", ticketsController.createTickits);
-Router.get("/getTickit", ticketsController.getTickits);
+// Router.post("/tickets", ticketsController.createTickits);
+// Router.get("/getTickit", ticketsController.getTickits);
 
 Router.all("/**", function (req, res) {
     res.status(404).send({

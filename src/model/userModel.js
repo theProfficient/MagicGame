@@ -100,6 +100,7 @@ const userSchema = new mongoose.Schema(
         },
       },
     ],
+    result:[],
   },
   { timestamps: true }
 );

@@ -1125,46 +1125,134 @@ const getBalance = async function (req, res) {
 };
 //_______________________________get result___________________________
 
-const getResult = async function (req, res) {
-  try {
-const RETAILERID = req.query.userId ;
-if(!RETAILERID){
-  return res.status(400).send({status:false, message:"RETAILERID is required"})
-}
-const checkRetailerId = await userModel.findById({_id:new mongoose.Type.ObjectId(RETAILERID)})
-if(!checkRetailerId){
-  return res.status(404).send({status:false, message:"data not found"})
-}
-const series1 = checkRetailerId.ticketData.filter(data => data.setnames === 1)
-const currentDate = new Date();
-const year = currentDate.getFullYear();
-const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // Adding leading zero if needed
-const day = String(currentDate.getDate()).padStart(2, '0'); // Adding leading zero if needed
-
-const formattedDate = `${year}-${month}-${day}`;
-
-const hours = String(currentDate.getHours()).padStart(2, '0'); // Adding leading zero if needed
-const minutes = String(currentDate.getMinutes()).padStart(2, '0'); // Adding leading zero if needed
-
-const formattedTime = `${hours}:${minutes}`;
-
-let drowId = checkRetailerId.ticketData.find(data => data.drawid)
-let seriesId = checkRetailerId.ticketData.find(data => data.setnames)
-const result = {
-  ID: 11722,
-  rcdt: new Date(),
-  result: ", 1051, 1104, 1288, 1356, 1411, 1552, 1699, 1793, 1876, 1975",
-  DrawID: drowId,
-  SeriesID: seriesId,
-  drawtimeFULL: formattedTime,
-  drawdate1: formattedDate,
-  drawtime: formattedTime
-}
-return res.status(200).json(result)
-  } catch (error) {
-    return res.status(500).send({ status: false, message: error.message });
+const getResult = async function (req, res) {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+  try{
+  const RETAILERID = req.query.RETAILERID;
+  if (!RETAILERID) {
+    return res.status(400).send({ status: false, message: "RETAILERID is required" });
   }
+  const checkRetailerId = await userModel.findById({ _id: RETAILERID });
+  if (!checkRetailerId) {
+    return res.status(404).send({ status: false, message: "data not found" });
+  }
+  const series1 = checkRetailerId.ticketData.filter((data) => data.setnames === 1);
+  const currentDate = new Date();
+  const year = currentDate.getFullYear();
+  const month = String(currentDate.getMonth() + 1).padStart(2, "0");
+  const day = String(currentDate.getDate()).padStart(2, "0");
+  const formattedDate = `${year}-${month}-${day}`;
+  const hours = String(currentDate.getHours()).padStart(2, "0");
+  const minutes = String(currentDate.getMinutes()).padStart(2, "0");
+  const formattedTime = `${hours}:${minutes}`;
+  let drowId = checkRetailerId.ticketData.find((data) => data.drawid);
+  // let seriesId = checkRetailerId.ticketData.find((data) => data.setnames);
+  function generateRandomNumber(rangeStart, rangeEnd) {
+    var random = Math.floor(Math.random() * (rangeEnd - rangeStart + 1)) + rangeStart;
+    return random;
+  }
+  let results1 = [];
+  let results2 = [];
+  let results3 = [];
+  let intervalID; // Variable to store the interval ID
+  let startTime = new Date();
+  let updateResult ;
+  function updateResults() {
+    results1 = [];
+    results2 = [];
+    results3 = [];
+    for (var i = 0; i < 10; i++) {
+      var rangeStart1 = 1000 + i * 100;
+      var rangeEnd1 = rangeStart1 + 99;
+      var number1 = generateRandomNumber(rangeStart1, rangeEnd1);
+      results1.push(number1);
+      var rangeStart2 = 3000 + i * 100;
+      var rangeEnd2 = rangeStart2 + 99;
+      var number2 = generateRandomNumber(rangeStart2, rangeEnd2);
+      results2.push(number2);
+      var rangeStart3 = 5000 + i * 100;
+      var rangeEnd3 = rangeStart3 + 99;
+      var number3 = generateRandomNumber(rangeStart3, rangeEnd3);
+      results3.push(number3);
+    }
+    // console.log([results1,results2,results3],"=============",new Date().getSeconds())
+        // Calculate the difference between the current time and the start time in milliseconds
+        let elapsedTime = new Date() - startTime;
+
+    // Check if the condition to stop the interval is met
+    if (elapsedTime >= 30*60*100) {
+      clearInterval(intervalID); // Stop the interval
+    }
+    const response1 = {
+      ID: 11721,
+      rcdt: new Date(),
+      result: results1,
+      DrawID: drowId,
+      SeriesID: 1,
+      drawtimeFULL: formattedTime,
+      drawdate1: formattedDate,
+      drawtime: formattedTime,
+    };
+    const response2 = {
+      ID: 12722,
+      rcdt: new Date(),
+      result: results2,
+      DrawID: drowId,
+      SeriesID: 2,
+      drawtimeFULL: formattedTime,
+      drawdate1: formattedDate,
+      drawtime: formattedTime,
+    };
+    const response3 = {
+      ID: 13723,
+      rcdt: new Date(),
+      result: results3,
+      DrawID: drowId,
+      SeriesID: 3,
+      drawtimeFULL: formattedTime,
+      drawdate1: formattedDate,
+      drawtime: formattedTime,
+    };
+    let outPut = [response1,response2,response3]
+    async function updateDataOfResult(){
+      console.log(outPut,"updating result>>>>>>>>>>>>>>>>")
+      updateResult = await userModel.findByIdAndUpdate(
+        { _id: RETAILERID },
+        { $push: { result: outPut } },
+        { new: true }
+      );
+      
+     console.log(updateResult,"updating result in database =======")
+    }
+  updateDataOfResult()
+  }
+  updateResults(); // Generate initial results
+  intervalID = setInterval(updateResults, 20000); // Update results every 15 min and store the interval ID
+
+  // const output = updateResult;
+  // console.log(output,"sresponse sent to the client=============================")
+  return res.status(200).json({message:"result declared"});
+}catch(error){
+  return res.status(500).send({status:false,message:error.message})
+}
 };
+
+const getAllResult = async function(req,res){
+  try{
+    const RETAILERID = req.query.RETAILERID;
+    if (!RETAILERID) {
+      return res.status(400).send({ status: false, message: "RETAILERID is required" });
+    }
+    const checkRetailerId = await userModel.findById({ _id: RETAILERID });
+    if (!checkRetailerId) {
+      return res.status(404).send({ status: false, message: "data not found" });
+    }
+    const output =checkRetailerId.result 
+    return res.status(200).json(output)
+
+  }catch(error){
+    return res.status(500).send({status:false,message:error.message})
+  }
+}
 
 module.exports = {
   createUser,
@@ -1173,5 +1261,7 @@ module.exports = {
   updateBalanceOfAnotherUser,
   getBalance,
   getResult,
+  getAllResult,
   updateTicketData,
+
 };
