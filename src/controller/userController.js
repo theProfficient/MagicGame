@@ -9,7 +9,7 @@ const createUser = async function (req, res) {
   try {
     let bodyData = req.body;
     let {
-      userName,
+      username,
       IMEIno,
       balance,
       password,
@@ -43,7 +43,7 @@ const createUser = async function (req, res) {
           "password should have at least 8 characters long, one uppercase, one lowercase, one digit and one special character(optional)",
       });
     }
-    let checkUser = await userModel.findOne({ userName: userName });
+    let checkUser = await userModel.findOne({ username: username });
     if (checkUser != null && checkUser != undefined) {
       return res.status(200).send({
         status: true,
@@ -179,7 +179,7 @@ const createUser = async function (req, res) {
 const getUser = async function (req, res) {
   try {
     let userId = req.query.userId;
-    if (userId && !mongoose.isValidObjectId(userId)) {
+    if (!userId && !mongoose.isValidObjectId(userId)) {
       return res.status(400).send({ status: false, message: "invalid id" });
     }
     if (userId) {
@@ -204,6 +204,80 @@ const getUser = async function (req, res) {
       });
     }
     return res.status(200).json(allData);
+  } catch (error) {
+    return res.status(500).send({
+      status: false,
+      message: error.message,
+    });
+  }
+};
+
+//____________________login the client with IMEIno________________________
+
+const loginClientWithIMEI = async function (req, res) {
+  try {
+    let queryData = req.query;
+
+    let { username, password, IMEIno } = queryData;
+
+    if (!username || !password || !IMEIno) {
+      return res.status(400).send({
+        status: false,
+        message: "username, password and IMEIno all are required",
+      });
+    }
+
+    let isUserExist = await userModel.findOne({
+      username: username,
+      password: password,
+      banned: false,
+    });
+
+    if (!isUserExist) {
+      return res.status(404).send({
+        Status: "False",
+        Message: "Invalid Credential",
+        CustomerID: " ",
+        BALANCE_POINTS: " ",
+        CustomerName: " ",
+        AgentID: " ",
+        version: "13",
+      });
+    }
+    if (isUserExist.IMEIno === "") {
+      isUserExist.IMEIno = IMEIno;
+      const updateIMEIno = await isUserExist.save();
+      return res.status(200).send({
+        Status: "True",
+        Message: "Logged in successfully",
+        CustomerID: updateIMEIno._id,
+        BALANCE_POINTS: updateIMEIno.balance,
+        CustomerName: updateIMEIno.username,
+        AgentID: updateIMEIno.agentId,
+        version: "13",
+      });
+    }
+    if (isUserExist.IMEIno === IMEIno) {
+      return res.status(200).send({
+        Status: "True",
+        Message: "success",
+        CustomerID: isUserExist._id,
+        BALANCE_POINTS: isUserExist.balance,
+        CustomerName: isUserExist.username,
+        AgentID: isUserExist.agentId,
+        version: "13",
+      });
+    } else {
+      return res.status(400).send({
+        Status: "False",
+        Message: "This client is already logged in with another device",
+        CustomerID: " ",
+        BALANCE_POINTS: " ",
+        CustomerName: " ",
+        AgentID: " ",
+        version: "13",
+      });
+    }
   } catch (error) {
     return res.status(500).send({
       status: false,
@@ -1072,17 +1146,23 @@ const updateBalanceOfAnotherUser = async function (req, res) {
 
 //_________________________update ticketData__________________________
 
-const updateTicketData = async function(req,res){
-  try{
+const updateTicketData = async function (req, res) {
+  try {
     const userId = req.query.userId;
-    
-    let {drawtime, drawid, retailerid, ticketnumber, totalqty, totalpoints, setnames} = req.query ;
-    
-  }catch(error){
-    return res.status(500).send({status:false, message:error.message})
-  }
-}
 
+    let {
+      drawtime,
+      drawid,
+      retailerid,
+      ticketnumber,
+      totalqty,
+      totalpoints,
+      setnames,
+    } = req.query;
+  } catch (error) {
+    return res.status(500).send({ status: false, message: error.message });
+  }
+};
 
 //_____________________get Balance_________________________
 
@@ -1095,7 +1175,7 @@ const getBalance = async function (req, res) {
         .send({ status: false, message: "userName is required" });
     }
 
-    const checkUserName = await userModel.findOne({ userName: username });
+    const checkUserName = await userModel.findOne({ username: username });
 
     if (!checkUserName) {
       return res
@@ -1104,13 +1184,13 @@ const getBalance = async function (req, res) {
     }
     let result = [
       {
-        CustomerEmailID: checkUserName.userName,
+        CustomerEmailID: checkUserName.username,
         POINTSALLOTTED: checkUserName.pointsAllocated,
         USEDPOINTS: checkUserName.usedPoints,
         REDEEMPOINTS: null,
         BALANCE_POINTS: checkUserName.balance,
         COMMISSION: checkUserName.commision,
-        CustomerID: checkUserName.userName,
+        CustomerID: checkUserName.username,
         RETURNED_POINTS: null,
         distsalecomm: null,
         Type: "Retailer",
@@ -1125,143 +1205,243 @@ const getBalance = async function (req, res) {
 };
 //_______________________________get result___________________________
 
-const getResult = async function (req, res) {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
-  try{
-  const RETAILERID = req.query.RETAILERID;
-  if (!RETAILERID) {
-    return res.status(400).send({ status: false, message: "RETAILERID is required" });
-  }
-  const checkRetailerId = await userModel.findById({ _id: RETAILERID });
-  if (!checkRetailerId) {
-    return res.status(404).send({ status: false, message: "data not found" });
-  }
-  const series1 = checkRetailerId.ticketData.filter((data) => data.setnames === 1);
-  const currentDate = new Date();
-  const year = currentDate.getFullYear();
-  const month = String(currentDate.getMonth() + 1).padStart(2, "0");
-  const day = String(currentDate.getDate()).padStart(2, "0");
-  const formattedDate = `${year}-${month}-${day}`;
-  const hours = String(currentDate.getHours()).padStart(2, "0");
-  const minutes = String(currentDate.getMinutes()).padStart(2, "0");
-  const formattedTime = `${hours}:${minutes}`;
-  let drowId = checkRetailerId.ticketData.find((data) => data.drawid);
-  // let seriesId = checkRetailerId.ticketData.find((data) => data.setnames);
-  function generateRandomNumber(rangeStart, rangeEnd) {
-    var random = Math.floor(Math.random() * (rangeEnd - rangeStart + 1)) + rangeStart;
-    return random;
-  }
-  let results1 = [];
-  let results2 = [];
-  let results3 = [];
-  let intervalID; // Variable to store the interval ID
-  let startTime = new Date();
-  let updateResult ;
-  function updateResults() {
-    results1 = [];
-    results2 = [];
-    results3 = [];
-    for (var i = 0; i < 10; i++) {
-      var rangeStart1 = 1000 + i * 100;
-      var rangeEnd1 = rangeStart1 + 99;
-      var number1 = generateRandomNumber(rangeStart1, rangeEnd1);
-      results1.push(number1);
-      var rangeStart2 = 3000 + i * 100;
-      var rangeEnd2 = rangeStart2 + 99;
-      var number2 = generateRandomNumber(rangeStart2, rangeEnd2);
-      results2.push(number2);
-      var rangeStart3 = 5000 + i * 100;
-      var rangeEnd3 = rangeStart3 + 99;
-      var number3 = generateRandomNumber(rangeStart3, rangeEnd3);
-      results3.push(number3);
-    }
-    // console.log([results1,results2,results3],"=============",new Date().getSeconds())
-        // Calculate the difference between the current time and the start time in milliseconds
-        let elapsedTime = new Date() - startTime;
-
-    // Check if the condition to stop the interval is met
-    if (elapsedTime >= 30*60*100) {
-      clearInterval(intervalID); // Stop the interval
-    }
-    const response1 = {
-      ID: 11721,
-      rcdt: new Date(),
-      result: results1,
-      DrawID: drowId,
-      SeriesID: 1,
-      drawtimeFULL: formattedTime,
-      drawdate1: formattedDate,
-      drawtime: formattedTime,
-    };
-    const response2 = {
-      ID: 12722,
-      rcdt: new Date(),
-      result: results2,
-      DrawID: drowId,
-      SeriesID: 2,
-      drawtimeFULL: formattedTime,
-      drawdate1: formattedDate,
-      drawtime: formattedTime,
-    };
-    const response3 = {
-      ID: 13723,
-      rcdt: new Date(),
-      result: results3,
-      DrawID: drowId,
-      SeriesID: 3,
-      drawtimeFULL: formattedTime,
-      drawdate1: formattedDate,
-      drawtime: formattedTime,
-    };
-    let outPut = [response1,response2,response3]
-    async function updateDataOfResult(){
-      console.log(outPut,"updating result>>>>>>>>>>>>>>>>")
-      updateResult = await userModel.findByIdAndUpdate(
-        { _id: RETAILERID },
-        { $push: { result: outPut } },
-        { new: true }
-      );
-      
-     console.log(updateResult,"updating result in database =======")
-    }
-  updateDataOfResult()
-  }
-  updateResults(); // Generate initial results
-  intervalID = setInterval(updateResults, 20000); // Update results every 15 min and store the interval ID
-
-  // const output = updateResult;
-  // console.log(output,"sresponse sent to the client=============================")
-  return res.status(200).json({message:"result declared"});
-}catch(error){
-  return res.status(500).send({status:false,message:error.message})
-}
-};
-
-const getAllResult = async function(req,res){
-  try{
+const getResult = async function (req, res) {
+  try {
     const RETAILERID = req.query.RETAILERID;
     if (!RETAILERID) {
-      return res.status(400).send({ status: false, message: "RETAILERID is required" });
+      return res
+        .status(400)
+        .send({ status: false, message: "RETAILERID is required" });
     }
     const checkRetailerId = await userModel.findById({ _id: RETAILERID });
     if (!checkRetailerId) {
       return res.status(404).send({ status: false, message: "data not found" });
     }
-    const output =checkRetailerId.result 
-    return res.status(200).json(output)
+    const series1 = checkRetailerId.ticketData.filter(
+      (data) => data.setnames === 1
+    );
+    const currentDate = new Date();
+    const year = currentDate.getFullYear();
+    const month = String(currentDate.getMonth() + 1).padStart(2, "0");
+    const day = String(currentDate.getDate()).padStart(2, "0");
+    const formattedDate = `${year}-${month}-${day}`;
+    const hours = String(currentDate.getHours()).padStart(2, "0");
+    const minutes = String(currentDate.getMinutes()).padStart(2, "0");
+    const formattedTime = `${hours}:${minutes}`;
+    let drowId = checkRetailerId.ticketData.find((data) => data.drawid);
+    // let seriesId = checkRetailerId.ticketData.find((data) => data.setnames);
+    function generateRandomNumber(rangeStart, rangeEnd) {
+      var random =
+        Math.floor(Math.random() * (rangeEnd - rangeStart + 1)) + rangeStart;
+      return random;
+    }
+    let results1 = [];
+    let results2 = [];
+    let results3 = [];
+    let intervalID; // Variable to store the interval ID
+    let startTime = new Date();
+    let updateResult;
+    function updateResults() {
+      results1 = [];
+      results2 = [];
+      results3 = [];
+      for (var i = 0; i < 10; i++) {
+        var rangeStart1 = 1000 + i * 100;
+        var rangeEnd1 = rangeStart1 + 99;
+        var number1 = generateRandomNumber(rangeStart1, rangeEnd1);
+        results1.push(number1);
+        var rangeStart2 = 3000 + i * 100;
+        var rangeEnd2 = rangeStart2 + 99;
+        var number2 = generateRandomNumber(rangeStart2, rangeEnd2);
+        results2.push(number2);
+        var rangeStart3 = 5000 + i * 100;
+        var rangeEnd3 = rangeStart3 + 99;
+        var number3 = generateRandomNumber(rangeStart3, rangeEnd3);
+        results3.push(number3);
+      }
+      // console.log([results1,results2,results3],"=============",new Date().getSeconds())
+      // Calculate the difference between the current time and the start time in milliseconds
+      let elapsedTime = new Date() - startTime;
 
-  }catch(error){
-    return res.status(500).send({status:false,message:error.message})
+      // Check if the condition to stop the interval is met
+      if (elapsedTime >= 30 * 60 * 100) {
+        clearInterval(intervalID); // Stop the interval
+      }
+      // let resp = [
+      //   {
+          // ID: 36686,
+          // rcdt: "2023-07-11T15:45:08.45",
+          // result:
+          //   ", 5003, 5166, 5232, 5337, 5459, 5588, 5659, 5709, 5829, 5963",
+          // DrawID: 3680,
+          // SeriesID: 5,
+          // drawtimeFULL: "15:45",
+          // drawdate1: "2023-07-11",
+          // drawtime: "15:45",
+      //   },
+      //   {
+      //     ID: 36684,
+      //     rcdt: "2023-07-11T15:45:08.45",
+      //     result:
+      //       ", 3053, 3135, 3226, 3337, 3454, 3535, 3609, 3762, 3873, 3925",
+      //     DrawID: 3680,
+      //     SeriesID: 3,
+      //     drawtimeFULL: "15:45",
+      //     drawdate1: "2023-07-11",
+      //     drawtime: "15:45",
+      //   },
+      //   {
+      //     ID: 36682,
+      //     rcdt: "2023-07-11T15:45:08.45",
+      //     result:
+      //       ", 1094, 1168, 1262, 1359, 1400, 1594, 1604, 1763, 1870, 1909",
+      //     DrawID: 3680,
+      //     SeriesID: 1,
+      //     drawtimeFULL: "15:45",
+      //     drawdate1: "2023-07-11",
+      //     drawtime: "15:45",
+      //   },
+      //   {
+      //     ID: 36676,
+      //     rcdt: "2023-07-11T15:30:18.06",
+      //     result:
+      //       ", 5031, 5168, 5288, 5352, 5425, 5524, 5651, 5716, 5808, 5943",
+      //     DrawID: 3679,
+      //     SeriesID: 5,
+      //     drawtimeFULL: "15:30",
+      //     drawdate1: "2023-07-11",
+      //     drawtime: "15:30",
+      //   },
+      //   {
+      //     ID: 36674,
+      //     rcdt: "2023-07-11T15:30:18.043",
+      //     result:
+      //       ", 3042, 3135, 3269, 3331, 3478, 3512, 3680, 3792, 3865, 3965",
+      //     DrawID: 3679,
+      //     SeriesID: 3,
+      //     drawtimeFULL: "15:30",
+      //     drawdate1: "2023-07-11",
+      //     drawtime: "15:30",
+      //   },
+      // ];
+     let ids = checkRetailerId.result
+     let response1, response2, response3 ;
+     if(ids.length === 0){
+        response1 = {
+         ID: 1000,
+         rcdt: new Date(),
+         result: results1.join(),
+         DrawID: 100,
+         SeriesID: 1,
+        drawtimeFULL: formattedTime,
+        drawdate1: formattedDate,
+        drawtime: formattedTime,
+      };
+       response2 = {
+        ID: 1003,
+        rcdt: new Date(),
+        result: results2.join(),
+        DrawID: 100,
+        SeriesID: 2,
+        drawtimeFULL: formattedTime,
+        drawdate1: formattedDate,
+        drawtime: formattedTime,
+      };
+       response3 = {
+        ID: 1005,
+        rcdt: new Date(),
+        result: results3.join(),
+        DrawID: 100,
+        SeriesID: 3,
+        drawtimeFULL: formattedTime,
+        drawdate1: formattedDate,
+        drawtime: formattedTime,
+      };
+    }else {
+      let DrawIDs = ids[ids.lemgth-1].DrawID+1
+      let id = ids[ids.lemgth-1].ID+2
+       response1 = {
+        ID: id,
+        rcdt: new Date(),
+        result: results1.join(),
+        DrawID: DrawIDs,
+        SeriesID: 1,
+        drawtimeFULL: formattedTime,
+        drawdate1: formattedDate,
+        drawtime: formattedTime,
+      };
+       response2 = {
+        ID: id,
+        rcdt: new Date(),
+        result: results2.join(),
+        DrawID: DrawIDs,
+        SeriesID: 2,
+        drawtimeFULL: formattedTime,
+        drawdate1: formattedDate,
+        drawtime: formattedTime,
+      };
+       response3 = {
+        ID: id,
+        rcdt: new Date(),
+        result: results3.join(),
+        DrawID: DrawIDs,
+        SeriesID: 3,
+        drawtimeFULL: formattedTime,
+        drawdate1: formattedDate,
+        drawtime: formattedTime,
+      };
+    }
+      let outPut = [response1, response2, response3];
+      async function updateDataOfResult() {
+        console.log(outPut, "updating result>>>>>>>>>>>>>>>>");
+        updateResult = await userModel.findByIdAndUpdate(
+          { _id: RETAILERID },
+          { $push: { result: outPut } },
+          { new: true }
+        );
+
+        console.log(updateResult, "updating result in database =======");
+      }
+      updateDataOfResult();
+    }
+    updateResults(); // Generate initial results
+    intervalID = setInterval(updateResults, 20000); // Update results every 15 min and store the interval ID
+
+    // const output = updateResult;
+    // console.log(output,"sresponse sent to the client=============================")
+    return res.status(200).json({ message: "result declared" });
+  } catch (error) {
+    return res.status(500).send({ status: false, message: error.message });
   }
-}
+};
+
+const getResulDatewise = async function (req, res) {
+  try {
+    const DRAWDATE1 = req.query.DRAWDATE1;
+    if (!DRAWDATE1) {
+      return res
+        .status(400)
+        .send({ status: false, message: "DRAWDATE1 is required" });
+    }
+    const checkRetailerId = await userModel.find({ _id: DRAWDATE1 });
+    if (!checkRetailerId) {
+      return res.status(404).send({ status: false, message: "data not found" });
+    }
+    const output = checkRetailerId.result;
+    return res.status(200).json(output);
+  } catch (error) {
+    return res.status(500).send({ status: false, message: error.message });
+  }
+};
 
 module.exports = {
   createUser,
   getUser,
+  loginClientWithIMEI,
   updateUser,
   updateBalanceOfAnotherUser,
   getBalance,
   getResult,
-  getAllResult,
+  getResulDatewise,
   updateTicketData,
-
 };

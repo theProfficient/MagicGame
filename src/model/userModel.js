@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "AgentData",
     },
-    userName: {
+    username: {
       type: String,
       required: true,
     },
@@ -35,6 +35,7 @@ const userSchema = new mongoose.Schema(
     },
     IMEIno: {
       type: String,
+      default:""
     },
     role: {
       type: String,
