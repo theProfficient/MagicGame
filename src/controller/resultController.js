@@ -1,9 +1,5 @@
 const mongoose = require("mongoose");
 const resultModel = require("../model/resultModel");
-const adminModel = require("../model/adminModel");
-const agentModel = require("../model/agentModel");
-const distributorModel = require("../model/distributorModel");
-const subDistributorModel = require("../model/subDistributorModel");
 
 const generateResult = async function (req, res) {
   try {
@@ -109,4 +105,24 @@ const generateResult = async function (req, res) {
   }
 };
 
-module.exports = { generateResult };
+//________________________________________get last result___________________________________________
+
+const getLastResult = async function (req, res) {
+  try {
+    const resultData = await resultModel
+      .find()
+      .select({ __v: 0, updatedAt: 0, createdAt: 0, _id: 0 });
+    if (resultData.length === 0) {
+      return res.status(404).send({ status: false, message: "data not found" });
+    }
+    const resp = [
+      resultData[resultData.length - 3],
+      resultData[resultData.length - 2],
+      resultData[resultData.length - 1],
+    ];
+    return res.status(200).json(resp);
+  } catch (error) {
+    return res.status(500).send({ status: false, message: error.message });
+  }
+};
+module.exports = { generateResult, getLastResult };

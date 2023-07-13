@@ -43,12 +43,11 @@ Router.get("/Home/LoginClient/", userController.loginClientWithIMEI);
 Router.put("/updateUserData", userController.updateUser);
 Router.put("/updateAnotherUserByUser", userController.updateBalanceOfAnotherUser);
 Router.get("/Home/GetSP_GET_POINT_BALANCE",  userController.getBalance);
-Router.get("/Home/Fun_sp_lastresult",  userController.getResult);
-Router.get("/Home/Fun_GET_sp_searchresult_datewise",  userController.getResulDatewise);
 Router.put("/Home/GetSP_GET_UPDATE_TICKETDATA", userController.updateTicketData);
 
 //____________________________________result ___________________________________________
 Router.get("/generateResult",  resultController.generateResult);
+Router.get("/Home/Fun_sp_lastresult",  resultController.getLastResult);
 
 //__________________________tickit________________________
 
