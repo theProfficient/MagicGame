@@ -1,6 +1,8 @@
 const mongoose = require("mongoose");
 const resultModel = require("../model/resultModel");
 
+//________________________________generate result___________________________
+
 const generateResult = async function (req, res) {
   try {
     const currentDate = new Date();
@@ -13,6 +15,7 @@ const generateResult = async function (req, res) {
 
     const formattedDate = `${year}-${month}-${day}`;
     const formattedTime = `${hours}:${minutes}:${seconds}`;
+
     function generateRandomNumber(rangeStart, rangeEnd) {
       var random =
         Math.floor(Math.random() * (rangeEnd - rangeStart + 1)) + rangeStart;
@@ -125,4 +128,27 @@ const getLastResult = async function (req, res) {
     return res.status(500).send({ status: false, message: error.message });
   }
 };
-module.exports = { generateResult, getLastResult };
+//________________________________________get result____________________________
+
+const getResultByDate = async function (req, res) {
+  try {
+    let DRAWDATE1 = req.query.DRAWDATE1;
+    let ResultData;
+    if (!DRAWDATE1) {
+      ResultData = await resultModel
+        .find()
+        .select({ _id: 0, updatedAt: 0, createdAt: 0, __v: 0 });
+    } else {
+      ResultData = await resultModel
+        .find({ drawdate1: DRAWDATE1 })
+        .select({ _id: 0, updatedAt: 0, createdAt: 0, __v: 0 });
+    }
+    if (ResultData.length === 0) {
+      return res.status(404).send({ status: false, message: "data not found" });
+    }
+    return res.status(200).json(ResultData);
+  } catch (error) {
+    return res.status(500).send({ status: false, message: error.message });
+  }
+};
+module.exports = { generateResult, getLastResult , getResultByDate};

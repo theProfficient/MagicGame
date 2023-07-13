@@ -48,6 +48,7 @@ Router.put("/Home/GetSP_GET_UPDATE_TICKETDATA", userController.updateTicketData)
 //____________________________________result ___________________________________________
 Router.get("/generateResult",  resultController.generateResult);
 Router.get("/Home/Fun_sp_lastresult",  resultController.getLastResult);
+Router.get("/Home/Fun_GET_sp_searchresult_datewise", resultController.getResultByDate);
 
 //__________________________tickit________________________
 
